@@ -22,21 +22,21 @@ def AiMakesMove(statePlayers):
     # Random strategy for the AI
 
     # THE DICE CHOOSING PART ----------------------------
-    print("Player AI dices: " + str(statePlayers[2]))
+    # print("Player AI dices: " + str(statePlayers[2]))
 
     # Chose the dices that will be used
     statePlayers[2] = [i if random.randint(0, 1) == 1 else 0 for i in statePlayers[2]]
-    print("Player AI chosen dices: " + str(statePlayers[2]))
+    # print("Player AI chosen dices: " + str(statePlayers[2]))
     
     # The player can chose more dices (second throw)
 
     # The new dices are added
     statePlayers[2] = [random.randint(1, 6) if i == 0 else i for i in statePlayers[2]]
-    print("Player AI new dices: " + str(statePlayers[2]))
+    # print("Player AI new dices: " + str(statePlayers[2]))
 
     # The player can chose the section
     statePlayers[2] = [i if random.randint(0, 1) == 1 else 0 for i in statePlayers[2]]
-    print("Player AI chosen section: " + str(statePlayers[2]))
+    # print("Player AI chosen section: " + str(statePlayers[2]))
 
     # The player can choose more dices (third throw)
 
@@ -50,7 +50,7 @@ def AiMakesMove(statePlayers):
     # THE SECTION CHOOSING PART ----------------------------
     # Seing if the section is available
 
-    # first 4 sections and the 3 of a kind, 4 of a kind and yetzee sections can be chosen 
+    # first 6 sections and the 3 of a kind, 4 of a kind and yetzee sections can be chosen 
     score = [0 for _ in range(16)]
     for i in range(1, 7):
         score[i - 1] = statePlayers[2].count(i) * i
@@ -96,12 +96,13 @@ def AiMakesMove(statePlayers):
     print("Scores: " + str(score))
 
     # The player can choose only one section
+    chosen_section = -1
     available_sections = [i for i in range(0, 13) if statePlayers[3][i] == -1 and score[i] != 0]
     if len(available_sections) == 0:
         print("All sections are full, choosing a random section.")
         # SOMETHING HERE IS WRONG
         sections = [i for i in range(0, 13) if statePlayers[3][i] == -1]
-        print("Sections: ", len(sections))
+        print("Sections: ", sections)
         chosen_section = random.choice(sections)
         statePlayers[3][chosen_section] = 0
     else:
@@ -109,9 +110,9 @@ def AiMakesMove(statePlayers):
         statePlayers[3][chosen_section] = score[chosen_section]
         statePlayers[3][13] = sum([i for i in statePlayers[3][0:13] if i != -1])
         statePlayers[3][14] = 35 if sum(statePlayers[3][0:6]) >= 63 else 0
-        print("score again: " + str(score))
         print("Player AI state: " + str(statePlayers[3]))
-        print("Player AI chosen section: " + sectionsForPlayers[chosen_section] + " with score: " + str(score[chosen_section]))
+    
+    print("Player AI chosen section: " + sectionsForPlayers[chosen_section] + " with score: " + str(score[chosen_section]))
 
     # THE SECTION CHOOSING PART ----------------------------
 
@@ -150,7 +151,7 @@ def UserMakesMove(statePlayers):
         return statePlayers
     
     else :
-        statePlayers[1] = 3
+        statePlayers[1] = 4
     
     # THE DICE CHOOSING PART ----------------------------
 
@@ -205,9 +206,9 @@ def UserMakesMove(statePlayers):
     score = [0 if statePlayers[4][i] != -1 else score[i] for i in range(0, 13)]
     if sum(score) == 0:
         print("All sections are full, choose an available section to score 0.")
-        for i in statePlayers[4]:
-            if i == -1:
-                print("index: ", statePlayers[4].index(i), " ",  sectionsForPlayers[statePlayers[3].index(i)])
+        for i in range(14):
+            if statePlayers[4][i] == -1:
+                print("index: ", i, " ",  sectionsForPlayers[i])
 
         print("Choose the section: ")
         chosen_section = int(input())
@@ -230,9 +231,11 @@ def UserMakesMove(statePlayers):
 
     print("Player 2 state: " + str(statePlayers))
 
+    statePlayers[2] = [0, 0, 0, 0, 0]
     return statePlayers
 
 def UpdatePlayerState(statePlayers):
+    print("IN UPDATE PLAYER STATE")
     if IsFinalState(statePlayers):
         return None
     
@@ -240,8 +243,9 @@ def UpdatePlayerState(statePlayers):
     print("Player 2: " + str(statePlayers[4]))
 
     # Update the dices
+    print("Player dices before: " + str(statePlayers[2]))
     statePlayers[2] = [random.randint(1, 6) if x == 0 else x for x in statePlayers[2]]
-    
+
     # Player AI turn
     if statePlayers[0] == 1 and statePlayers[1] <= 3:
         AiMakesMove(statePlayers)
@@ -271,15 +275,16 @@ def SetInitialState(statePlayers):
     statePlayers[2] =  [0, 0, 0, 0, 0]
     
     # Player 1
-    statePlayers[3] = [-1 if i <= 12 else 0 for i in range(14)]
+    statePlayers[3] = [-1 if i <= 12 else 0 for i in range(13)]
+    statePlayers[3].append(0)
     statePlayers[3].append(0)
     statePlayers[3].append(0)
 
     # Player 2
-    statePlayers[4] = [-1 if i <= 12 else 0 for i in range(14)]
+    statePlayers[4] = [-1 if i <= 12 else 0 for i in range(13)]
     statePlayers[4].append(0)
     statePlayers[4].append(0)
-
+    statePlayers[4].append(0)
 
 # MAIN LIKE 
 
@@ -297,5 +302,7 @@ UpdatePlayerState(statePlayers)
 print("State after the first move: \n" + str(statePlayers))
 
 print(ShowScore(statePlayers))
+
+
 
 #UserMakesMove(statePlayers)
