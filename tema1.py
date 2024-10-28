@@ -19,6 +19,7 @@ def IsFinalState(statePlayers):
         # Continue game normaly
 
 def ScoreCalculation(dices):
+    # Firts 6 sections, 3 of a kind, 4 of a kind, Yahtzee
     score = [0 for _ in range(16)]
     for i in range(1, 7):
         score[i - 1] = dices.count(i) * i
@@ -99,7 +100,7 @@ def AiMakesMove(statePlayers):
     # The player can choose only one section
     chosen_section = -1
     available_sections = [i for i in range(0, 13) if statePlayers[3][i] == -1 and score[i] != 0]
-    if len(available_sections) == 0:
+    if len(available_sections) == 0: # No available sections
         print("All sections are full, choosing a random section.")
         
         sections = [i for i in range(0, 13) if statePlayers[3][i] == -1]
@@ -110,9 +111,11 @@ def AiMakesMove(statePlayers):
     else:
         chosen_section = random.choice(available_sections)
         statePlayers[3][chosen_section] = score[chosen_section]
-
+        # sum
         statePlayers[3][13] = sum([i for i in statePlayers[3][0:6] if i != -1])
+        # bonus
         statePlayers[3][14] = 35 if sum(statePlayers[3][0:6]) >= 63 else 0
+        # total score
         statePlayers[3][15] = sum([i for i in statePlayers[3][0:13] if i != -1]) + statePlayers[3][14]
         # print("Player AI state: " + str(statePlayers[3]))
     
@@ -203,7 +206,7 @@ def UserMakesMove(statePlayers):
             print("Choose a valid section:")
     
     statePlayers[4][13] = sum([i for i in statePlayers[4][0:6] if i != -1])
-    statePlayers[4][14] = 35 if sum(statePlayers[4][0:6]) >= 63 else -1
+    statePlayers[4][14] = 35 if sum(statePlayers[4][0:6]) >= 63 else 0
     statePlayers[4][15] = sum([i for i in statePlayers[4][0:13] if i != -1]) + statePlayers[4][14]
 
     # print("Player 2 state: " + str(statePlayers))
@@ -231,8 +234,8 @@ def UpdatePlayerState(statePlayers):
 
         print()
         print("Players state:")
-        print("\t AI Player: " + str([i if i != -1 else '-' for i in statePlayers[3][0:13]]))
-        print("\t You      : " + str([i if i != -1 else '-' for i in statePlayers[4][0:13]]))
+        print("\t AI Player: " + str([i if i != -1 else '-' for i in statePlayers[3][0:13]]), " First 6 sections score: ", statePlayers[3][13], " Bonus: ", statePlayers[3][14], " Total score: ", statePlayers[3][15])
+        print("\t You      : " + str([i if i != -1 else '-' for i in statePlayers[4][0:13]]), " First 6 sections score: ", statePlayers[4][13], " Bonus: ", statePlayers[4][14], " Total score: ", statePlayers[4][15])
         print()
 
         statePlayers[0] = 2
@@ -276,7 +279,7 @@ def SetInitialState(statePlayers):
 
 # MAIN LIKE 
 # Initial Configuration
-sectionsForPlayers = ["One", "Two", "Three", "Four", "Five", "Six", "3 of a kind", "4 of a kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance", "Total", "Bonus", "Final Score"]
+sectionsForPlayers = ["One", "Two", "Three", "Four", "Five", "Six", "3 of a kind", "4 of a kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance", "First 6 sections score", "Bonus", "Final Score"]
 statePlayers = list(range(5))
 
 print("Welcome to Yahtzee! :)")
