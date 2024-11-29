@@ -1,4 +1,6 @@
 import random
+import numpy as np
+
 
 def ShowScore(statePlayers):
     print()
@@ -287,3 +289,58 @@ print()
 SetInitialState(statePlayers)
 
 UpdatePlayerState(statePlayers)
+
+
+#---------------------------------Q-Learn---------------------------------------
+# Define the states and actions
+states = range(13)  # 13 scoring sections
+actions = range(13)  # 13 scoring sections
+
+# Initialize the Q-table
+Q = np.zeros((len(states), len(actions)))
+
+# Hyperparameters
+alpha = 0.1  # Learning rate
+gamma = 0.9  # Discount factor
+epsilon = 1  # Exploration rate 
+episodes = 500
+
+def choose_action(state, Q, epsilon): 
+    #First it will explore more and them it will exploit more
+    if random.uniform(0, 1) < epsilon:
+        if epsilon > 0.1:
+            epsilon -= 0.001
+        return random.choice(actions)  # Explore
+    else:
+        return np.argmax(Q[state])  # Exploit
+
+def update_q_table(Q, state, action, reward, next_state, alpha, gamma):
+    best_next_action = np.argmax(Q[next_state])
+    td_target = reward + gamma * Q[next_state][best_next_action]
+    td_error = td_target - Q[state][action]
+    Q[state][action] += alpha * td_error
+
+def get_reward(statePlayers, player):
+    return statePlayers[player][15]  # Final score
+
+# Main Q-learning loop
+for episode in range(episodes):
+    SetInitialState(statePlayers)
+    done = False
+
+    while not done:
+        state = statePlayers[0]  # Current state
+        action = choose_action(state, Q, epsilon)
+        
+        # Simulate the action (score the chosen section)
+        statePlayers[3][action] = ScoreCalculation(statePlayers[2])[action]
+        statePlayers[4][action] = ScoreCalculation(statePlayers[2])[action]
+        
+        next_state = statePlayers[0]  # Next state
+        reward = get_reward(statePlayers, 3)  # Reward for Player 1
+        update_q_table(Q, state, action, reward, next_state, alpha, gamma)
+        
+        if IsFinalState(statePlayers):
+            done = True
+
+print("Q-learning completed.")
