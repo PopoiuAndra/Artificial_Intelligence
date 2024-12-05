@@ -5,12 +5,12 @@ import pickle
 #import matplotlib.pyplot as plt
 
 # Constants
-num_episodes = 100000
+num_episodes = 100
 epsilon = 0.5
 NUM_EPISODES = 0
 ALPHA = 0.9  # Learning rate
 GAMMA = 0.9  # Discount factor
-EPSILON = 0.7  # Exploration rate
+EPSILON = 0.6  # Exploration rate
 Q_TABLE_FILE = 'q_table.pkl'  # File in which the Q-table will be saved
 Q_NUM_FILE = 'num_episodes.pkl' # File in which the number of episodes will be saved
 
@@ -42,7 +42,7 @@ def save_episodes_num(num_episodes):
         pickle.dump(num_episodes, f)
 
 def choose_action(state):
-    if random.random() < 0.2:
+    if random.random() < 0.1:
         # Explore: Choose a random action
         return random.choice([i for i in range(0,13) if state[1][i] == 0])
     
@@ -262,15 +262,17 @@ def AiMakesMove(statePlayers):
     for i in range(0, 2):
         print("Ai choses the ", (i + 1), "th time")
         global EPSILON
-        #if random.random() < EPSILON:
-            #print("Random action")
+        EPSILON = max(0.05, EPSILON - 0.05)
+        if random.random() < EPSILON:
+            print("Random action")
             # Explore: Choose a random action
-            #statePlayers[2] = [i if random.randint(0, 1) == 1 else 0 for i in statePlayers[2]]
-            #statePlayers[2] = [random.randint(1, 6) if i == 0 else i for i in statePlayers[2]]
+            statePlayers[2] = [i if random.random() <= EPSILON else 0 for i in statePlayers[2]]
+            statePlayers[2] = [random.randint(1, 6) if i == 0 else i for i in statePlayers[2]]
 
-            #action = random.choice([i for i in range(5) if statePlayers[2][i] == 0])
-            #EPSILON = max(0.1, EPSILON - 0.1)
-            #continue
+            print(new_state)
+
+            action = random.choice([i for i in range(13) if new_state[i] == 0])
+            continue
         
         # Dices like in the q-table
         dices = sorted(statePlayers[2])
@@ -332,17 +334,20 @@ def AiMakesMove(statePlayers):
         elif action == 12:
             # Chance
             statePlayers[2] = [statePlayers[2][i] if statePlayers[2][i] > 3 else random.randint(1, 6) for i in range(5)]
+        
+        print("AI chose to reroll")
+        print()
     # THE DICE CHOOSING PART ----------------------------
 
     alegere = max(range(13), key = lambda alegere: ScoreCalculation(statePlayers[2])[alegere] if statePlayers[3][alegere] == -1 else -1) 
     score = ScoreCalculation(statePlayers[2])[alegere]
-    print("Final dices:", statePlayers[2], "Final action: ", alegere, "Score: ", ScoreCalculation(statePlayers[2])[alegere])
+    print("Final dices:", statePlayers[2])
+    print("AI Player chose the section: ", sectionsForPlayers[alegere], " with score: ", score)
 
     statePlayers[3][alegere] = score
     statePlayers[3][13] = sum([i for i in statePlayers[3][0:6] if i != -1])
     statePlayers[3][14] = 35 if sum(statePlayers[3][0:6]) >= 63 else 0
     statePlayers[3][15] = sum([i for i in statePlayers[3][0:13] if i != -1]) + statePlayers[3][14]
-    print("New state AI: " + str(statePlayers[3]))
 
     statePlayers[2] = reset_dice()
     statePlayers[1] = 4
@@ -351,7 +356,6 @@ def AiMakesMove(statePlayers):
     return statePlayers
 
 def UserMakesMove(statePlayers):
-    
     # THE DICE CHOOSING PART ----------------------------
     statePlayers[1] += 1
 
@@ -363,6 +367,7 @@ def UserMakesMove(statePlayers):
     else:
         print("Choose the dices that you want to keep(the index number): ")
         dices = list(map(int, input().split()))
+        print()
         for i in range(0,5):
             if i in dices:
                 source.append(statePlayers[2][i])
@@ -419,6 +424,7 @@ def UserMakesMove(statePlayers):
     while valid_choice == False:
         print("Choose the section: ")
         chosen_section = int(input())
+        print("You chose the section: ", sectionsForPlayers[chosen_section])
         if chosen_section >= 0 and chosen_section <= 12 and statePlayers[4][chosen_section] == -1 and score[chosen_section] != 0:
             valid_choice = True
             statePlayers[4][chosen_section] = score[chosen_section]
@@ -466,6 +472,7 @@ def UpdatePlayerState(statePlayers):
         # The turn changes
         print()
         print("AI PLAYER TURN")
+        print()
 
         statePlayers[0] = 1
         statePlayers[1] = 0
@@ -509,6 +516,5 @@ statePlayers = list(range(5))
 print("Welcome to Yahtzee! :)")
 print()
 SetInitialState(statePlayers)
-print("Q-table", q_table.get((((1, 2, 2, 3, 5), (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)), 1), -1))
 
 UpdatePlayerState(statePlayers)
