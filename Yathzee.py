@@ -2,15 +2,12 @@ import random
 from itertools import product
 import os
 import pickle
-#import matplotlib.pyplot as plt
 
 # Constants
-num_episodes = 100000
-epsilon = 0.5
-NUM_EPISODES = 0
-ALPHA = 0.9  # Learning rate
+NUM_EPISODES = 1000
+ALPHA = 0.1  # Learning rate
 GAMMA = 0.9  # Discount factor
-EPSILON = 0.7  # Exploration rate
+EPSILON = 1.0  # Exploration rate
 Q_TABLE_FILE = 'q_table.pkl'  # File in which the Q-table will be saved
 Q_NUM_FILE = 'num_episodes.pkl' # File in which the number of episodes will be saved
 
@@ -32,6 +29,7 @@ if os.path.exists(Q_TABLE_FILE):
     print(type(q_table))
 else:
     q_table = {}
+    NUM_EPISODES = NUM_EPISODES
 
 def save_q_table():
     with open(Q_TABLE_FILE, 'wb') as f:
@@ -42,12 +40,14 @@ def save_episodes_num(num_episodes):
         pickle.dump(num_episodes, f)
 
 def choose_action(state):
-    if random.random() < 0.2:
+    if random.random() < EPSILON:
         # Explore: Choose a random action
-        return random.choice([i for i in range(0,13) if state[1][i] == 0])
-    
-    # Exploit: Choose the best-known action
-    return max(range(13), key=lambda action: q_table.get((state, action), calculate_reward(state[0], state[1], action)/5.0) if state[1][action] == 0 else -1)
+        # EPSILON = max(0.1, EPSILON - 0.001) ---------------------------------IDK IF IT IS NEEDED
+        return random.choice(range(len(scoring_combinations)))
+    else:
+        # Exploit: Choose the best-known action
+        return max(range(len(scoring_combinations)), 
+                   key=lambda action: q_table.get((state, action), 0.0))
 
 def roll_dice(held_dice=[]):
     dice = held_dice + [random.randint(1, 6) for _ in range(5 - len(held_dice))]
@@ -86,35 +86,35 @@ def calculate_reward(dice, state, action_index):
         return sum(dice)
     return 0  # Fallback reward
 
-def train_q_learning(): 
+def train_q_learning(statePlayers):  #------------STARTED NOT FINISHED-----TO BE ADAPTED COMPLETELY TO OUR CODE---------------
+    num_episodes = NUM_EPISODES 
     for episode in range(num_episodes):
         print(f"Episode {episode + NUM_EPISODES} started.")
         # Initialize the game state
-        dices = roll_dice()
-        dices.sort()
+        statePlayers[2] = roll_dice()
         scoring_state = tuple([0] * 13)  # All categories initially empty
+        SetInitialState(statePlayers)
 
         for turn in range(13):  # Maximum of 13 turns per game/episode
             #print(f"Turn {turn + 1} started.")
             # Define the current state
-            current_state = (tuple(dices), scoring_state) #print("Current state: ", current_state)
+            current_state = (tuple(statePlayers[2]), scoring_state)
 
             # Choose an action (scoring category) using epsilon-greedy policy
-            action = choose_action(current_state) #print("\nAction: ", action)
+            action = choose_action(current_state)
 
             # Calculate the reward for the chosen action
-            reward = calculate_reward(dices, scoring_state,  action) #print("Reward: ", reward)
+            reward = calculate_reward(statePlayers[2], action)
 
             #print("scoring state before: ", scoring_state)
             # Simulate scoring the chosen category (update scoring_state)
             new_scoring_state = list(scoring_state)
             if 0 <= action < len(new_scoring_state):
                 new_scoring_state[action] = 1  # Mark the category as taken
-            scoring_state = tuple(new_scoring_state) #print("Scoring state after: ", scoring_state)
+            scoring_state = tuple(new_scoring_state)
 
             # Roll the dice again for the next state
-            dices = roll_dice()
-            dices.sort()
+            statePlayers[2] = roll_dice()
 
             # Define the new state
             new_state = (tuple(dices), scoring_state)
@@ -160,18 +160,20 @@ def calculate_convergence_of_algorithm():
             max_next_q_value = max(
                 q_table.get((new_state, act), 0.0) for act in range(13) if new_state[1][act] == 0
             )
+
+            # Update Q-value using the Q-learning formula
             current_q_value = q_table.get((current_state, action), 0.0)
             q_table[(current_state, action)] = current_q_value + ALPHA * (
                 reward + GAMMA * max_next_q_value - current_q_value
             )
 
-        rewards_per_episode.append(total_reward)
+        # Optional: Print progress
+        if episode % 50 == 0:
+            print(f"Episode {episode} completed.")
 
-    #Aplt.plot(range(num_episodes + NUM_EPISODES), rewards_per_episode)
-    #Aplt.xlabel('Episode')
-    #Aplt.ylabel('Total Reward')
-    #Aplt.title('Convergence of Q-Learning Algorithm')
-    #Aplt.show()
+    print("Training complete!")
+    save_q_table()
+    save_episodes_num(num_episodes)
 
 def ShowScore(statePlayers):
     print()
@@ -244,95 +246,37 @@ def AiMakesMove(statePlayers):
     # THE DICE ROLLING PART
     statePlayers[2] = roll_dice()
     
-    # THE CHOOSING PART BASED ON THE Q-LEARNING STRATEGY  
+    print("Dices: " + str(statePlayers[2]))
+    
+    # THE CHOOSING PART BASED ON THE Q-LEARNING STRATEGY      ----------------TO BE DONE----------------
+    # score = ScoreCalculation(statePlayers[2])
+    # # print("Scores: " + str(score))
 
-    # Making the section state like in the q-table
-    new_state = [0 for _ in range(13)]
-    ct = 0
-    for i in statePlayers[3][:13]:
-        if i == -1:
-            new_state[ct] = 0
-        elif i == 0:
-            new_state[ct] = 0
-        else:
-            new_state[ct] = 1
-        ct += 1
-
-    # THE DICE CHOOSING PART ----------------------------
-    for i in range(0, 2):
-        print("Ai choses the ", (i + 1), "th time")
-        global EPSILON
-        #if random.random() < EPSILON:
-            #print("Random action")
-            # Explore: Choose a random action
-            #statePlayers[2] = [i if random.randint(0, 1) == 1 else 0 for i in statePlayers[2]]
-            #statePlayers[2] = [random.randint(1, 6) if i == 0 else i for i in statePlayers[2]]
-
-            #action = random.choice([i for i in range(5) if statePlayers[2][i] == 0])
-            #EPSILON = max(0.1, EPSILON - 0.1)
-            #continue
+    # # The player can choose only one section
+    # chosen_section = -1
+    # available_sections = [i for i in range(0, 13) if statePlayers[3][i] == -1 and score[i] != 0]
+    # if len(available_sections) == 0: # No available sections
+    #     print("All sections are full, choosing a random section.")
         
-        # Dices like in the q-table
-        dices = sorted(statePlayers[2])
-        print("Dices:", statePlayers[2])
+    #     sections = [i for i in range(0, 13) if statePlayers[3][i] == -1]
+    #     print("Sections: ", sections)
 
-        curent_state = tuple ((tuple(dices), tuple(new_state)))
+    #     chosen_section = random.choice(sections)
+    #     statePlayers[3][chosen_section] = 0
+    # else:
+    #     chosen_section = random.choice(available_sections)
+    #     statePlayers[3][chosen_section] = score[chosen_section]
+    #     # sum
+    #     statePlayers[3][13] = sum([i for i in statePlayers[3][0:6] if i != -1])
+    #     # bonus
+    #     statePlayers[3][14] = 35 if sum(statePlayers[3][0:6]) >= 63 else 0
+    #     # total score
+    #     statePlayers[3][15] = sum([i for i in statePlayers[3][0:13] if i != -1]) + statePlayers[3][14]
+    #     # print("Player AI state: " + str(statePlayers[3]))
+    
+    # print("AI Player chose the section " + sectionsForPlayers[chosen_section] + " with score: " + str(score[chosen_section]))
 
-        action = max(range(13), key=lambda action: q_table.get((curent_state, action), 0.0) if new_state[action] == 0 else 0.0)
-        for i in range(13):
-            print(q_table.get((curent_state, i), 0.0), end = " ")
-        reward = q_table.get((curent_state, action), 0.0)
-        print("Action:", action)
-        print("Reward:", q_table.get((curent_state, action), 0.0))
-
-        # Reroll the dices based on the action
-        if action >= 0 and action <= 5:
-            # reroll all dices diferit from 1
-            statePlayers[2] = [statePlayers[2][i] if statePlayers[2][i] == (action + 1) else random.randint(1, 6) for i in range(5)] 
-        elif action == 6:
-            # 3 of a kind
-            statePlayers[2] = [statePlayers[2][i] if statePlayers[2].count(statePlayers[2][i]) >= 3 else random.randint(1, 6) for i in range(5)]
-        elif action == 7:
-            # 4 of a kind
-            statePlayers[2] = [statePlayers[2][i] if statePlayers[2].count(statePlayers[2][i]) >= 4 else random.randint(1, 6) for i in range(5)]
-        elif action == 8:
-            # Full House
-            statePlayers[2] = [statePlayers[2][i] if statePlayers[2].count(statePlayers[2][i]) >= 2 else random.randint(1, 6) for i in range(5)]
-        elif action == 9: 
-            # Small Straight
-            # keep only the dices that are in the small straight
-            set_new_dices = set(statePlayers[2])
-            dices = sorted(list(set_new_dices))
-
-            dices14 = [i for i in dices if i <= 4 ]
-            dices25 = [i for i in dices if i >= 2 and i <= 5]
-            dices36 = [i for i in dices if i >= 3]
-
-            if len(dices14) > len(dices25) and len(dices14) > len(dices36):
-                statePlayers[2] = [statePlayers[2][i] if statePlayers[2][i] in dices14 else random.randint(1, 6) for i in range(5)]
-            elif len(dices25) > len(dices14) and len(dices25) > len(dices36):
-                statePlayers[2] = [statePlayers[2][i] if statePlayers[2][i] in dices25 else random.randint(1, 6) for i in range(5)]
-            elif len(dices36) > len(dices14) and len(dices36) > len(dices25):
-                statePlayers[2] = [statePlayers[2][i] if statePlayers[2][i] in dices36 else random.randint(1, 6) for i in range(5)]
-            elif len(dices14) == len(dices25):
-                statePlayers[2] = [statePlayers[2][i] if statePlayers[2][i] in dices14 or statePlayers[2][i] in dices25 else random.randint(1, 6) for i in range(5)]
-            elif len(dices14) == len(dices36):
-                statePlayers[2] = [statePlayers[2][i] if statePlayers[2][i] in dices25 else random.randint(1, 6) for i in range(5)]
-            elif len(dices25) == len(dices36):
-                statePlayers[2] = [statePlayers[2][i] if statePlayers[2][i] in dices25 or statePlayers[2][i] in dices36 else random.randint(1, 6) for i in range(5)]
-            else:
-                statePlayers[2] = [statePlayers[2][i] if statePlayers[2][i] in dices else random.randint(1, 6) for i in range(5)]
-
-        elif action == 10:
-            # Large Straight
-            break # keep all of them 
-        elif action == 11:
-            # Yahtzee
-            break # keep all of them
-        elif action == 12:
-            # Chance
-            statePlayers[2] = [statePlayers[2][i] if statePlayers[2][i] > 3 else random.randint(1, 6) for i in range(5)]
-    # THE DICE CHOOSING PART ----------------------------
+    # THE SECTION CHOOSING PART ----------------------------
 
     alegere = max(range(13), key = lambda alegere: ScoreCalculation(statePlayers[2])[alegere] if statePlayers[3][alegere] == -1 else -1) 
     score = ScoreCalculation(statePlayers[2])[alegere]
@@ -505,6 +449,9 @@ train_q_learning()
 # After training is done, you can play the game 
 sectionsForPlayers = ["One", "Two", "Three", "Four", "Five", "Six", "3 of a kind", "4 of a kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance", "First 6 sections score", "Bonus", "Final Score"]
 statePlayers = list(range(5))
+
+# Call the function to start training
+train_q_learning(statePlayers)
 
 print("Welcome to Yahtzee! :)")
 print()
