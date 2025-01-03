@@ -5,7 +5,7 @@ import pickle
 #import matplotlib.pyplot as plt
 
 # Constants
-num_episodes = 100
+num_episodes = 1
 epsilon = 0.5
 NUM_EPISODES = 0
 ALPHA = 0.9  # Learning rate
@@ -29,7 +29,6 @@ if os.path.exists(Q_TABLE_FILE):
         with open (Q_NUM_FILE, 'rb') as num:
             NUM_EPISODES = NUM_EPISODES + pickle.load(num) # Load the number of episodes from the file
         f.close()
-    print(type(q_table))
 else:
     q_table = {}
 
@@ -88,29 +87,33 @@ def calculate_reward(dice, state, action_index):
 
 def train_q_learning(): 
     for episode in range(num_episodes):
-        print(f"Episode {episode + NUM_EPISODES} started.")
+        print("Episode " , episode + NUM_EPISODES, " started.")
         # Initialize the game state
         dices = roll_dice()
         dices.sort()
         scoring_state = tuple([0] * 13)  # All categories initially empty
 
         for turn in range(13):  # Maximum of 13 turns per game/episode
-            #print(f"Turn {turn + 1} started.")
+            print("Turn ", turn + 1, " started.")
             # Define the current state
-            current_state = (tuple(dices), scoring_state) #print("Current state: ", current_state)
+            current_state = (tuple(dices), scoring_state) 
+            print("Current state: ", current_state)
 
             # Choose an action (scoring category) using epsilon-greedy policy
-            action = choose_action(current_state) #print("\nAction: ", action)
+            action = choose_action(current_state) 
+            print("\nAction: ", action)
 
             # Calculate the reward for the chosen action
-            reward = calculate_reward(dices, scoring_state,  action) #print("Reward: ", reward)
+            reward = calculate_reward(dices, scoring_state,  action) 
+            print("Reward: ", reward)
 
-            #print("scoring state before: ", scoring_state)
+            print("scoring state before: ", scoring_state)
             # Simulate scoring the chosen category (update scoring_state)
             new_scoring_state = list(scoring_state)
             if 0 <= action < len(new_scoring_state):
                 new_scoring_state[action] = 1  # Mark the category as taken
-            scoring_state = tuple(new_scoring_state) #print("Scoring state after: ", scoring_state)
+            scoring_state = tuple(new_scoring_state) 
+            print("Scoring state after: ", scoring_state)
 
             # Roll the dice again for the next state
             dices = roll_dice()
@@ -120,13 +123,16 @@ def train_q_learning():
             new_state = (tuple(dices), scoring_state)
 
             # Compute the maximum Q-value for the next state
-            max_next_q_value = 0.0 if 1 not in new_state else max(
-                q_table.get((new_state, act), 0.0) for act in range(13) if new_state[1][act] == 0) #print("Max next Q-value: ", max_next_q_value)
+            max_next_q_value = 0.0 if new_state[1] == (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) else max(
+                q_table.get((new_state, act), 0.0) for act in range(13) if new_state[1][act] == 0) 
+            print("Max next Q-value: ", max_next_q_value)
 
             # Update Q-value using the Q-learning formula
-            current_q_value = q_table.get((current_state, action), 0.0) #print("Current Q-value: ", current_q_value)
+            current_q_value = q_table.get((current_state, action), 0.0) 
+            print("Current Q-value: ", current_q_value)
             
-            q_table[(current_state, action)] = current_q_value + ALPHA * (reward + GAMMA * max_next_q_value - current_q_value) #print("Updated Q-value: ", q_table[(current_state, action)])
+            q_table[(current_state, action)] = current_q_value + ALPHA * (reward + GAMMA * max_next_q_value - current_q_value) 
+            print("Updated Q-value: ", q_table[(current_state, action)])
            
         # Print progress
         if episode % 50 == 0:
