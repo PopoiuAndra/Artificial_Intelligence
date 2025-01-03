@@ -25,7 +25,7 @@ def main():
 
     # Extragere cuvinte cheie și generare propoziții
     keyword_sentences = extract_keywords_and_generate_sentences(text)
-    print("Keyword Sentences:")
+    print("Generated Sentences:")
     for sentence in keyword_sentences:
         print(sentence)
 
