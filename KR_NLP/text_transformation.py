@@ -85,7 +85,7 @@ def disambiguate_sense(word, sentence, wordnet_data, version):
 
      # != original word synset id 
     ##print("word", word, get_id_for_word(word, wordnet_data))
-    print(similarities)
+    #print(similarities)
     if version == 1:
         return list(synset_ids)[best_index]
     elif version == 2:
@@ -120,7 +120,7 @@ def get_relations(word, wordnet_data):
 
     if synset_ids == []:
         return []
-    ##print("\nsynset_ids ", synset_ids)
+    #print("\nsynset_ids ", synset_ids)
     # Găsește relațiile pentru fiecare synsetRef
     for synset_id in synset_ids:
         for entry in entries:
@@ -195,9 +195,9 @@ def generate_alternative_sentences(sentence, version, wordnet_data, replacement_
         if word in words_to_replace:
             # Caută alternative în WordNet
             alternatives = get_relations(word, wordnet_data)
-            ##print("Alternatives for ", word, " ", alternatives)
+            #print("Alternatives for ", word, " ", alternatives)
             alternatives = disambiguate_sense(word, sentence, wordnet_data, version)
-            ##print("Alternatives for ", word, " ", alternatives)
+            #print("Alternatives for ", word, " ", alternatives)
             if alternatives.count(word) > 0:
                 alternatives.remove(word)
             if alternatives:
