@@ -280,9 +280,9 @@ def generate_alternative_texts(text):
     wordnet_file = "rown-3.0.json"
 
     # Descărcare și încărcare WordNet
-    #try:
+    # try:
     #    download_wordnet(wordnet_url, wordnet_file)
-    #except Exception as e:
+    # except Exception as e:
     #    print(f"Eroare la descărcare: {e}")
 
     wordnet_data = load_wordnet(wordnet_file)

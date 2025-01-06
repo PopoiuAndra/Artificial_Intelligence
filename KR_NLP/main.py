@@ -3,7 +3,7 @@ from text_processing import read_text
 from language_detection import detect_language
 from stylometry import generate_stylometric_info
 from text_transformation import generate_alternative_texts, reconstruct_original_sentence_spacy_v2
-#from keyword_extraction import extract_keywords_and_generate_sentences
+from keyword_extraction import extract_keywords_and_generate_sentences
 
 def main():
     # Citește textul de la linia de comandă sau dintr-un fișier
@@ -20,14 +20,15 @@ def main():
     # Generare texte alternative
     alternative_texts = generate_alternative_texts(text)
     print("Alternative Texts:")
-    print(alternative_texts)
+    # versiunea lametizata a textului
+    # print(alternative_texts)
     print(reconstruct_original_sentence_spacy_v2(alternative_texts, text))
 
     # Extragere cuvinte cheie și generare propoziții
-    #keyword_sentences = extract_keywords_and_generate_sentences(text)
+    keyword_sentences = extract_keywords_and_generate_sentences(alternative_texts)
     print("Generated Sentences:")
-    #for sentence in keyword_sentences:
-     #   print(sentence)
+    for sentence in keyword_sentences:
+        print(sentence)
 
 if __name__ == "__main__":
     main()
