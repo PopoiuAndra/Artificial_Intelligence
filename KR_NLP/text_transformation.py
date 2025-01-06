@@ -55,7 +55,7 @@ def get_id_for_word(word, wordnet_data):
     return []
 
 # Disambiguate the sense of a word based on context
-def disambiguate_sense(word, sentence, wordnet_data):
+def disambiguate_sense(word, sentence, wordnet_data, version):
     entries = wordnet_data.get("@graph", [])
     doc = nlp(sentence)
     context = " ".join([token.lemma_ for token in doc])
@@ -85,11 +85,19 @@ def disambiguate_sense(word, sentence, wordnet_data):
 
      # != original word synset id 
     ##print("word", word, get_id_for_word(word, wordnet_data))
-    if list(synset_ids)[best_index] != get_id_for_word(word, wordnet_data):
-        return list(synset_ids)[best_index] 
-    else :
+    print(similarities)
+    if version == 1:
+        return list(synset_ids)[best_index]
+    elif version == 2:
         if len(synset_ids) > 1:
-            return list(synset_ids)[best_index - 1]
+            best_index = similarities.argsort()[-2]
+            return list(synset_ids)[best_index]
+        else:
+            return list(synset_ids)[best_index]
+    elif version == 3:
+        if len(synset_ids) > 2:
+            best_index = similarities.argsort()[-3]
+            return list(synset_ids)[best_index]
         else:
             return list(synset_ids)[best_index]
 
@@ -175,7 +183,7 @@ def get_written_form_by_synset(synset_ref, wordnet_data):
     return []
 
 # Generează propoziții alternative
-def generate_alternative_sentences(sentence, wordnet_data, replacement_ratio=0.2):
+def generate_alternative_sentences(sentence, version, wordnet_data, replacement_ratio=0.2):
     words = sentence.split()
     num_replacements = max(1, int(len(words) * replacement_ratio))  # Cel puțin un cuvânt de înlocuit
     
@@ -188,7 +196,7 @@ def generate_alternative_sentences(sentence, wordnet_data, replacement_ratio=0.2
             # Caută alternative în WordNet
             alternatives = get_relations(word, wordnet_data)
             ##print("Alternatives for ", word, " ", alternatives)
-            alternatives = disambiguate_sense(word, sentence, wordnet_data)
+            alternatives = disambiguate_sense(word, sentence, wordnet_data, version)
             ##print("Alternatives for ", word, " ", alternatives)
             if alternatives.count(word) > 0:
                 alternatives.remove(word)
@@ -196,24 +204,6 @@ def generate_alternative_sentences(sentence, wordnet_data, replacement_ratio=0.2
                 alternative_sentence[i] =  get_written_form_by_synset(alternatives, wordnet_data)
     
     return " ".join(alternative_sentence)
-
-
-def reconstruct_original_sentence_spacy(lemmatized_sentence, original_sentence):
-    # Process both sentences using SpaCy
-    original_doc = nlp(original_sentence)
-    lemmatized_doc = nlp(lemmatized_sentence)
-
-    # Create a mapping from lemmatized tokens to their original tokens
-    lemma_to_original = {}
-    for orig_token in original_doc:
-        if orig_token.lemma_ not in lemma_to_original:
-            lemma_to_original[orig_token.lemma_] = orig_token.text
-
-    # Reconstruct the sentence by mapping lemmatized tokens back to original tokens
-    reconstructed_tokens = [
-        lemma_to_original.get(token.lemma_, token.text) for token in lemmatized_doc
-    ]
-    return " ".join(reconstructed_tokens)
 
 def reconstruct_original_sentence_spacy_v2(lemmatized_sentence, original_sentence):
     # Curățăm propoziția lematizată (eliminăm parantezele [] și _)
@@ -302,7 +292,16 @@ def generate_alternative_texts(text):
     for token in doc:
         text += token.lemma_ + " "
     #print("Text lematizat:", text)
-    new_text = generate_alternative_sentences(text, wordnet_data)
+    new_text1 = generate_alternative_sentences(text, 1, wordnet_data)
+    print("Text lematizat alternativ:", new_text1)
+    new_text2 = generate_alternative_sentences(text, 2, wordnet_data)
+    print("Text lematizat alternativ:", new_text2)
+    new_text3 = generate_alternative_sentences(text, 3, wordnet_data)
+    print("Text lematizat alternativ:", new_text3)
+    new_text = []
+    new_text.append(new_text1)
+    new_text.append(new_text2)
+    new_text.append(new_text3)
     #print("Text lematizat alternativ:", new_text)
     return new_text
 

@@ -20,9 +20,10 @@ def main():
     # Generare texte alternative
     alternative_texts = generate_alternative_texts(text)
     print("Alternative Texts:")
-    # versiunea lametizata a textului
-    # print(alternative_texts)
-    print(reconstruct_original_sentence_spacy_v2(alternative_texts, text))
+    ct = 1
+    for alternative_text in alternative_texts:
+        print("Version ", ct, " ", reconstruct_original_sentence_spacy_v2(alternative_text, text))
+        ct += 1
 
     # Extragere cuvinte cheie și generare propoziții
     keyword_sentences = extract_keywords_and_generate_sentences(alternative_texts)
