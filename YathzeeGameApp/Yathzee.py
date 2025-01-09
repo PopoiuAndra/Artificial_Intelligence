@@ -511,7 +511,7 @@ def SetInitialState(statePlayers):
 # MAIN LIKE FUNCTION
 
 # Call the function to start training
-train_q_learning()
+#train_q_learning()
 #print(q_table)
 #calculate_convergence_of_algorithm()
 

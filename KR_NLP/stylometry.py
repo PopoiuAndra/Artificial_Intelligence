@@ -2,7 +2,6 @@ from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.probability import FreqDist
 import nltk
 
-# Asigură-te că resursele NLTK sunt descărcate
 nltk.download('punkt')
 
 def generate_stylometric_info(text):

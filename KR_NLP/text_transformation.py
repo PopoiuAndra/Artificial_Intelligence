@@ -143,7 +143,6 @@ def get_relations(word, wordnet_data):
                                                             if i["synsetRef"] == relation["target"]:
                                                                 #print("In word_entry2 sense synsetRef target", word_entry2["lemma"]["writtenForm"])
                                                                 relations.append( word_entry2["lemma"]["writtenForm"])
-    return relations
 
 # Găsește sinonimele pentru un cuvânt
 def get_synonyms(word, wordnet_data):

@@ -12,8 +12,8 @@ nltk.download('averaged_perceptron_tagger')
 nltk.download('maxent_ne_chunker')
 nltk.download('words')
 
-def get_word_definition(word, sentence):
-    synsets = wn.Wordnet('omw-ro').synsets(word)
+def get_word_definition(word):
+    synsets = wn.Wordnet('omw-ro').synsets(word) # primul sens al cuvantului
     if synsets:
         return synsets[0].definition()
     return None
@@ -21,9 +21,9 @@ def get_word_definition(word, sentence):
 nlp = spacy.load("ro_core_news_sm")
 
 def generate_contextual_sentence(keyword, original_sentence, definition):
-    doc = nlp(original_sentence)
+    doc = nlp(original_sentence) #in doc : tokenii, entitățile numite, părțile de vorbire
     
-    # Find the keyword in the sentence
+    # Caut keyword ul in propozitie
     keyword_token = None
     for token in doc:
         if token.text.lower() == keyword.lower():
@@ -34,7 +34,7 @@ def generate_contextual_sentence(keyword, original_sentence, definition):
         return f"În contextul dat, cuvântul {keyword} este utilizat astfel: '{original_sentence}'"
 
     if keyword_token:
-        # Handle different parts of speech
+        # Genereare propozitii in functie de diferite parti de vorbire
         if keyword_token.pos_ in ['NOUN', 'PROPN']:
             if definition:
                 # Create a clean sentence focusing on the definition
@@ -42,13 +42,15 @@ def generate_contextual_sentence(keyword, original_sentence, definition):
             else:
                 # Get only relevant modifiers
                 modifiers = [t.text for t in keyword_token.children 
-                           if t.dep_ in ['amod', 'nummod', 'det']]
+                           if t.dep_ in ['amod', 'nummod', 'det']] #amod - adjectiv, nummod - numar care modifica un substantiv, det - determinant
                 if modifiers:
                     return f"{keyword.capitalize()} este {' '.join(modifiers)} în acest context."
                 return f"{keyword.capitalize()} apare ca element principal în acest context."
         
         elif keyword_token.pos_ == 'VERB':
+            # subiect nominal
             subject = next((t for t in doc if t.dep_ == 'nsubj' and t.head == keyword_token), None)
+            # (direct object,indirect object)tipuri de relații gramaticale în analiza sintactică
             objects = [t for t in doc if t.dep_ in ['dobj', 'iobj'] and t.head == keyword_token]
             
             if definition:
@@ -75,7 +77,7 @@ def generate_contextual_sentence(keyword, original_sentence, definition):
             else:
                 return f"În acest context, acțiunea {modified_verb.text} este modificată de adverbul {keyword}."
     
-    # Fallback that ensures a clean ending
+    # Fallback
     if definition:
         return f"În acest context, {keyword} are sensul de {definition}."
     return f"Cuvântul {keyword} este utilizat în contextul: '{original_sentence}'."
@@ -107,8 +109,8 @@ def extract_keywords_and_generate_sentences(text):
         )
 
         if relevant_sentence:
-            # Get the definition (keeping your existing functionality)
-            definition = get_word_definition(keyword, relevant_sentence)
+            # Get the definition
+            definition = get_word_definition(keyword)
             
             # Generate a new contextual sentence
             new_sentence = generate_contextual_sentence(keyword, relevant_sentence, definition)
