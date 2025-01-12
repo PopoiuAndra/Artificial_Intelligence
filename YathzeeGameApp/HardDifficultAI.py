@@ -2,7 +2,11 @@ import random
 from itertools import product
 import os
 import pickle
-#import matplotlib.pyplot as plt
+import re
+
+#Initial state
+sectionsForPlayers = ["One", "Two", "Three", "Four", "Five", "Six", "3 of a kind", "4 of a kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance", "First 6 sections score", "Bonus", "Final Score"]
+statePlayers = list(range(5))
 
 # Constants
 num_episodes = 1
@@ -372,7 +376,7 @@ def UserMakesMove(statePlayers):
         print("You have reached the maximum number of throws.")
     else:
         print("Choose the dices that you want to keep(the index number): ")
-        dices = list(map(int, input().split()))
+        dices = list(map(int, re.findall(r'\d+', input())))
         print()
         for i in range(0,5):
             if i in dices:
@@ -508,19 +512,18 @@ def SetInitialState(statePlayers):
     statePlayers[4].append(0)
     statePlayers[4].append(0)
 
-# MAIN LIKE FUNCTION
+def main():
+    # Call the function to start training
+    # train_q_learning()
+    # print(q_table)
+    # calculate_convergence_of_algorithm()
 
-# Call the function to start training
-#train_q_learning()
-#print(q_table)
-#calculate_convergence_of_algorithm()
+    # After training is done, you can play the game 
+    print("Welcome to Hard Yahtzee! :)")
+    print()
+    SetInitialState(statePlayers)
 
-# After training is done, you can play the game 
-sectionsForPlayers = ["One", "Two", "Three", "Four", "Five", "Six", "3 of a kind", "4 of a kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance", "First 6 sections score", "Bonus", "Final Score"]
-statePlayers = list(range(5))
+    UpdatePlayerState(statePlayers)
 
-print("Welcome to Yahtzee! :)")
-print()
-SetInitialState(statePlayers)
-
-UpdatePlayerState(statePlayers)
+if __name__ == "__main__":
+    main()

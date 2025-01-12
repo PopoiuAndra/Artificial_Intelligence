@@ -1,4 +1,9 @@
 import random
+import re
+
+# Initial Configuration
+sectionsForPlayers = ["One", "Two", "Three", "Four", "Five", "Six", "3 of a kind", "4 of a kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance", "First 6 sections score", "Bonus", "Final Score"]
+statePlayers = list(range(5))
 
 def ShowScore(statePlayers):
     print()
@@ -142,7 +147,7 @@ def UserMakesMove(statePlayers):
         print("You have reached the maximum number of throws.")
     else:
         print("Choose the dices that you want to keep(the index number): ")
-        dices = list(map(int, input().split()))
+        dices = list(map(int, re.findall(r'\d+', input())))
         for i in range(0,5):
             if i in dices:
                 source.append(statePlayers[2][i])
@@ -271,19 +276,18 @@ def SetInitialState(statePlayers):
     statePlayers[3].append(0) # Bonus
     statePlayers[3].append(0) # Total score
 
-    # Player 2
+    # Player AI
     statePlayers[4] = [-1 if i <= 12 else 0 for i in range(13)]
     statePlayers[4].append(0)
     statePlayers[4].append(0)
     statePlayers[4].append(0)
 
-# MAIN LIKE 
-# Initial Configuration
-sectionsForPlayers = ["One", "Two", "Three", "Four", "Five", "Six", "3 of a kind", "4 of a kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance", "First 6 sections score", "Bonus", "Final Score"]
-statePlayers = list(range(5))
+def main():
+    print("Welcome to Eazy Yahtzee! :)")
+    print()
+    SetInitialState(statePlayers)
 
-print("Welcome to Yahtzee! :)")
-print()
-SetInitialState(statePlayers)
+    UpdatePlayerState(statePlayers)
 
-UpdatePlayerState(statePlayers)
+if __name__ == "__main__":
+    main()
