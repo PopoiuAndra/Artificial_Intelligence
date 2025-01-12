@@ -22,128 +22,6 @@ def load_wordnet(json_file):
     with open(json_file, 'r', encoding='utf-8-sig') as f:
         return json.load(f)
 
-# Obține toate cuvintele din WordNet
-def list_all_words(wordnet_data):
-    words = set()
-    entries = wordnet_data.get("@graph", [])
-    for entry in entries:
-        if "entry" in entry:
-            for word_entry in entry["entry"]:
-                words.add(word_entry["lemma"]["writtenForm"])
-    return words
-
-# Obține gloss-ul pentru un synsetRef
-def get_gloss_for_synset(synset_id, wordnet_data):
-    for sub_entry in wordnet_data["@graph"]:
-        if "synset" in sub_entry:  # Check for the synset in sub-entry
-            for entry in sub_entry["synset"]:
-                    if entry["@id"] == synset_id:
-                        definitions = entry.get("definition", [])
-                        return " ".join(d["gloss"] for d in definitions)
-    return []
-
-def get_id_for_word(word, wordnet_data):
-    entries = wordnet_data.get("@graph", [])
-    for entry in entries:
-        if "entry" in entry:
-            for word_entry in entry["entry"]:
-                if "lemma" in word_entry:
-                    if "writtenForm" in word_entry["lemma"] and word_entry["lemma"]["writtenForm"] == word:
-                        if "sense" in word_entry:
-                            for sense in word_entry["sense"]:
-                                return sense["synsetRef"]
-    return []
-
-# Disambiguate the sense of a word based on context
-def disambiguate_sense(word, sentence, wordnet_data, version):
-    entries = wordnet_data.get("@graph", [])
-    doc = nlp(sentence)
-    context = " ".join([token.lemma_ for token in doc])
-
-    synset_ids = set()
-    for entry in entries:
-        if "entry" in entry:
-            for word_entry in entry["entry"]:
-                if word_entry["lemma"]["writtenForm"] == word:
-                    for sense in word_entry.get("sense", []):
-                        synset_ids.add(sense["synsetRef"])
-
-    if not synset_ids:
-        return []
-
-    ##print("\nsynset_ids ", synset_ids)
-    vectorizer = TfidfVectorizer()
-    glosses = [get_gloss_for_synset(synset_id, wordnet_data) for synset_id in synset_ids]
-    glosses = [g for g in glosses if g]
-    if not glosses:
-        return []
-
-    vectors = vectorizer.fit_transform([context] + glosses)
-    #print("vectors ", vectors, "After")
-    similarities = cosine_similarity(vectors[0:1], vectors[1:]).flatten()
-    best_index = similarities.argmax()
-
-     # != original word synset id 
-    ##print("word", word, get_id_for_word(word, wordnet_data))
-    #print(similarities)
-    if version == 1:
-        return list(synset_ids)[best_index]
-    elif version == 2:
-        if len(synset_ids) > 1:
-            best_index = similarities.argsort()[-2]
-            return list(synset_ids)[best_index]
-        else:
-            return list(synset_ids)[best_index]
-    elif version == 3:
-        if len(synset_ids) > 2:
-            best_index = similarities.argsort()[-3]
-            return list(synset_ids)[best_index]
-        else:
-            return list(synset_ids)[best_index]
-
-# Găsește relațiile pentru un cuvânt dat în formă normală
-def get_relations(word, wordnet_data):
-    entries = wordnet_data.get("@graph", [])
-    relations = []
-    synset_ids = set()
-
-    # Găsește synsetRef pentru cuvânt
-    for entry in entries:
-        if "entry" in entry:
-            #print("In entry")
-            for word_entry in entry["entry"]:
-                if word_entry["lemma"]["writtenForm"] == word:
-                    #print("In word_entry ", word_entry["lemma"]["writtenForm"])
-                    for sense in word_entry.get("sense", []):
-                        #print("In sense ", sense["synsetRef"])
-                        synset_ids.add(sense["synsetRef"])
-
-    if synset_ids == []:
-        return []
-    #print("\nsynset_ids ", synset_ids)
-    # Găsește relațiile pentru fiecare synsetRef
-    for synset_id in synset_ids:
-        for entry in entries:
-            if "synset" in entry:    
-                for word_entry in entry["synset"]:
-                    if word_entry["@id"] == synset_id:
-                       #print("In word_entry2 ", word_entry["@id"])
-                       if "relations" in word_entry:
-                            for relation in word_entry["relations"]:
-                                    #print("In relation ", relation["relType"], " ", relation["target"])
-                                    # search for the target word in the entry
-                                    if relation["relType"] == "hyponym":
-                                        for entry2 in entries:
-                                            if "entry" in entry2:
-                                                for word_entry2 in entry2["entry"]:
-                                                    if "sense" in word_entry2:
-                                                        ceva = word_entry2["sense"]
-                                                        for i in ceva:
-                                                            #print("In word_entry2 sense synsetRef ", i["synsetRef"])
-                                                            if i["synsetRef"] == relation["target"]:
-                                                                #print("In word_entry2 sense synsetRef target", word_entry2["lemma"]["writtenForm"])
-                                                                relations.append( word_entry2["lemma"]["writtenForm"])
-
 # Găsește sinonimele pentru un cuvânt
 def get_synonyms(word, wordnet_data):
     entries = wordnet_data.get("@graph", [])
@@ -170,6 +48,107 @@ def get_synonyms(word, wordnet_data):
                                     synonyms.append(word_entry["lemma"]["writtenForm"])
     return list(set(synonyms))
 
+# Găsește relațiile pentru un cuvânt dat în formă normală
+def get_relations(word, wordnet_data):
+    entries = wordnet_data.get("@graph", [])
+    relations = []
+    synset_ids = set()
+
+    # Găsește synsetRef pentru cuvânt
+    for entry in entries:
+        if "entry" in entry:
+            for word_entry in entry["entry"]:
+                if word_entry["lemma"]["writtenForm"] == word:
+                    for sense in word_entry.get("sense", []):
+                        synset_ids.add(sense["synsetRef"])
+
+    if synset_ids == []:
+        return []
+    
+    # Găsește relațiile pentru fiecare synsetRef
+    for synset_id in synset_ids:
+        for entry in entries:
+            if "synset" in entry:    
+                for word_entry in entry["synset"]:
+                    if word_entry["@id"] == synset_id:
+                       if "relations" in word_entry:
+                            for relation in word_entry["relations"]:
+                                    # search for the target word in the entry
+                                    if relation["relType"] == "hyponym":
+                                        for entry2 in entries:
+                                            if "entry" in entry2:
+                                                for word_entry2 in entry2["entry"]:
+                                                    if "sense" in word_entry2:
+                                                        ceva = word_entry2["sense"]
+                                                        for i in ceva:
+                                                            if i["synsetRef"] == relation["target"]:
+                                                                relations.append( word_entry2["lemma"]["writtenForm"])
+
+def get_id_for_word(word, wordnet_data):
+    entries = wordnet_data.get("@graph", [])
+    for entry in entries:
+        if "entry" in entry:
+            for word_entry in entry["entry"]:
+                if "lemma" in word_entry:
+                    if "writtenForm" in word_entry["lemma"] and word_entry["lemma"]["writtenForm"] == word:
+                        if "sense" in word_entry:
+                            for sense in word_entry["sense"]:
+                                return sense["synsetRef"]
+    return []
+
+# Obține gloss-ul pentru un synsetRef
+def get_gloss_for_synset(synset_id, wordnet_data):
+    for sub_entry in wordnet_data["@graph"]:
+        if "synset" in sub_entry:  # Check for the synset in sub-entry
+            for entry in sub_entry["synset"]:
+                    if entry["@id"] == synset_id:
+                        definitions = entry.get("definition", [])
+                        return " ".join(d["gloss"] for d in definitions)
+    return []
+
+# Disambiguate the sense of a word based on context
+def disambiguate_sense(word, sentence, wordnet_data, version):
+    entries = wordnet_data.get("@graph", [])
+    doc = nlp(sentence)
+    context = " ".join([token.lemma_ for token in doc])
+
+    synset_ids = set()
+    for entry in entries:
+        if "entry" in entry:
+            for word_entry in entry["entry"]:
+                if word_entry["lemma"]["writtenForm"] == word:
+                    for sense in word_entry.get("sense", []):
+                        synset_ids.add(sense["synsetRef"])
+
+    if not synset_ids:
+        return []
+
+    vectorizer = TfidfVectorizer()
+    glosses = [get_gloss_for_synset(synset_id, wordnet_data) for synset_id in synset_ids]
+    glosses = [g for g in glosses if g]
+    if not glosses:
+        return []
+
+    vectors = vectorizer.fit_transform([context] + glosses)
+    similarities = cosine_similarity(vectors[0:1], vectors[1:]).flatten()
+    best_index = similarities.argmax()
+
+     # != original word synset id 
+    if version == 1:
+        return list(synset_ids)[best_index]
+    elif version == 2:
+        if len(synset_ids) > 1:
+            best_index = similarities.argsort()[-2]
+            return list(synset_ids)[best_index]
+        else:
+            return list(synset_ids)[best_index]
+    elif version == 3:
+        if len(synset_ids) > 2:
+            best_index = similarities.argsort()[-3]
+            return list(synset_ids)[best_index]
+        else:
+            return list(synset_ids)[best_index]
+
 def get_written_form_by_synset(synset_ref, wordnet_data):
     for entry in wordnet_data.get("@graph", []):
         if "entry" in entry:  # Focus only on entries with the 'entry' key
@@ -193,10 +172,8 @@ def generate_alternative_sentences(sentence, version, wordnet_data, replacement_
     for i, word in enumerate(words):
         if word in words_to_replace:
             # Caută alternative în WordNet
-            alternatives = get_relations(word, wordnet_data)
-            #print("Alternatives for ", word, " ", alternatives)
+            #alternatives = get_relations(word, wordnet_data)
             alternatives = disambiguate_sense(word, sentence, wordnet_data, version)
-            #print("Alternatives for ", word, " ", alternatives)
             if alternatives.count(word) > 0:
                 alternatives.remove(word)
             if alternatives:
@@ -216,10 +193,6 @@ def reconstruct_original_sentence_spacy_v2(lemmatized_sentence, original_sentenc
     lemma_to_original = {}
     for orig_token in original_doc:
         lemma_key = orig_token.lemma_
-        
-        # Dacă cuvântul este reflexiv (ex. "se află"), combină-l corect
-        if orig_token.morph.get("Reflex") == "Yes" and orig_token.dep_ in {"aux", "expl"}:
-            lemma_key = f"[se] {lemma_key}"
 
         # Adăugăm token-ul în hartă
         lemma_to_original[lemma_key] = orig_token.text
@@ -230,17 +203,11 @@ def reconstruct_original_sentence_spacy_v2(lemmatized_sentence, original_sentenc
         # Verificăm forma corectă pe baza morfologiei
         lemma_key = lem_token.lemma_
         
-        # Dacă cuvântul este reflexiv (ex. "se află"), combină-l corect
-        if lem_token.morph.get("Reflex") == "Yes" and lem_token.dep_ in {"aux", "expl"}:
-            lemma_key = f"[se] {lemma_key}"
-        
         # Verifică morfologia pentru a păstra forma corectă (ex. caz genitiv: "dascălului")
         if lemma_key in lemma_to_original:
             # Verifică dacă există forma morfologică (caz, genitiv, etc.)
             morph_info = lem_token.morph
             original_word = lemma_to_original[lemma_key]
-            ##print("Original word: ", original_word)
-            ##print("Morph info: ", morph_info)
             
             # Dacă cuvântul original are o formă diferită din cauza cazului, păstrează forma corectă
             if morph_info.get("Case"):
@@ -278,19 +245,15 @@ def generate_alternative_texts(text):
 
     # Testăm propozițiile alternative
     
-    #text = "Elevii răspund solicitărilor profesorului, cer lămuriri și participă activ la lecții. Este important să existe un dialog între profesor și elevi pentru a facilita învățarea."
-    #alternative_text = generate_alternative_sentences(text, wordnet_data)
-    #print("Original:", text)
-    #print("Alternativă:", alternative_text)
     # Test sentence
     doc = nlp("Elevii răspund solicitărilor profesorului, cer lămuriri și participă activ la lecții. Este important să existe un dialog între profesor și elevi pentru a facilita învățarea.")
     #make doc lower case
     doc = nlp(text.lower())
-    #print("Lemmatized words:", [token.lemma_ for token in doc])
+    
     text = ""
     for token in doc:
         text += token.lemma_ + " "
-    #print("Text lematizat:", text)
+    
     new_text1 = generate_alternative_sentences(text, 1, wordnet_data)
     print("Text lematizat alternativ:", new_text1)
     new_text2 = generate_alternative_sentences(text, 2, wordnet_data)
@@ -301,10 +264,7 @@ def generate_alternative_texts(text):
     new_text.append(new_text1)
     new_text.append(new_text2)
     new_text.append(new_text3)
-    #print("Text lematizat alternativ:", new_text)
+    
     return new_text
 
-    #print("Propozitie originala: ", base_text)
-    #print("Reconstructie propozitie: ", reconstruct_original_sentence_spacy(new_text, base_text))
-    #print("Reconstructie propozitie v2: ", reconstruct_original_sentence_spacy_v2(new_text, base_text))
      

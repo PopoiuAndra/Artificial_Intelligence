@@ -12,8 +12,9 @@ nltk.download('averaged_perceptron_tagger')
 nltk.download('maxent_ne_chunker')
 nltk.download('words')
 
+# primul sens al cuvantului
 def get_word_definition(word):
-    synsets = wn.Wordnet('omw-ro').synsets(word) # primul sens al cuvantului
+    synsets = wn.Wordnet('omw-ro').synsets(word) #set de date lingvistice
     if synsets:
         return synsets[0].definition()
     return None
