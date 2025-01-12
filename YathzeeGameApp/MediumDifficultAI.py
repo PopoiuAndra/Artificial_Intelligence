@@ -1,5 +1,6 @@
 import random
 from EasyDifficultAI import IsFinalState, ScoreCalculation, SetInitialState, UserMakesMove
+from GameAssistant import initialize_assistant, handle_assistance
 
 # Initial 
 sectionsForPlayers = ["One", "Two", "Three", "Four", "Five", "Six", "3 of a kind", "4 of a kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance", "First 6 sections score", "Bonus", "Final Score"]
@@ -197,12 +198,22 @@ def UpdatePlayerState(statePlayers):
     # Enters the next transition with the updated state
     UpdatePlayerState(statePlayers)
 
-def main():
+async def main():
+    game_assistant = initialize_assistant()
     print("Welcome to Medium Yahtzee! :)")
-    print()
+    print("Type 'help' during your turn to access the game assistant.")
+    
     SetInitialState(statePlayers)
-
-    UpdatePlayerState(statePlayers)
+    
+    while True:
+        if input().lower() == 'help':
+            await handle_assistance(game_assistant, statePlayers)
+        
+        UpdatePlayerState(statePlayers)
+        
+        if IsFinalState(statePlayers):
+            break
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(main())
