@@ -1,10 +1,9 @@
 import random
-from EasyDifficultAI import IsFinalState, ScoreCalculation, SetInitialState, UserMakesMove
-from GameAssistant import initialize_assistant, handle_assistance
+from EasyDifficultAI import IsFinalState, ScoreCalculation
+#from GameAssistant import initialize_assistant, handle_assistance
 
-# Initial 
+# Initial Configuration
 sectionsForPlayers = ["One", "Two", "Three", "Four", "Five", "Six", "3 of a kind", "4 of a kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance", "First 6 sections score", "Bonus", "Final Score"]
-statePlayers = list(range(5))
 
 def evaluate_state(state_players):
     """
@@ -123,7 +122,7 @@ def minimax(state_players, depth, is_maximizing, alpha, beta):
                     
         return min_eval, best_dice, best_section
 
-def AiMakesMove(state_players):
+def AiMakesMoveMedium(state_players):
     """
     Updated AI move function using minimax strategy.
     """
@@ -157,63 +156,3 @@ def AiMakesMove(state_players):
     state_players[2] = [0, 0, 0, 0, 0]
     
     return state_players
-
-
-def UpdatePlayerState(statePlayers):
-    if IsFinalState(statePlayers):
-        return None
-
-    # Update the dices
-    statePlayers[2] = [random.randint(1, 6) if x == 0 else x for x in statePlayers[2]]
-
-    # Player AI turn
-    if statePlayers[0] == 1 and statePlayers[1] <= 3:
-        AiMakesMove(statePlayers)
-    elif statePlayers[0] == 1:
-        # The turn changes
-        print()
-        print("YOUR TURN")
-
-        print()
-        print("Players state:")
-        print("\t AI Player: " + str([i if i != -1 else '-' for i in statePlayers[3][0:13]]), " First 6 sections score: ", statePlayers[3][13], " Bonus: ", statePlayers[3][14], " Total score: ", statePlayers[3][15])
-        print("\t You      : " + str([i if i != -1 else '-' for i in statePlayers[4][0:13]]), " First 6 sections score: ", statePlayers[4][13], " Bonus: ", statePlayers[4][14], " Total score: ", statePlayers[4][15])
-        print()
-
-        statePlayers[0] = 2
-        statePlayers[1] = 0
-
-    # Phisical player turn
-    elif statePlayers[0] == 2 and statePlayers[1] <= 3:
-        UserMakesMove(statePlayers)
-    elif statePlayers[0] == 2:
-        # The turn changes
-        print()
-        print("AI PLAYER TURN")
-        print()
-
-        statePlayers[0] = 1
-        statePlayers[1] = 0
-
-    # Enters the next transition with the updated state
-    UpdatePlayerState(statePlayers)
-
-async def main():
-    game_assistant = initialize_assistant()
-    print("Welcome to Medium Yahtzee! :)")
-    print("Type 'help' during your turn to access the game assistant.")
-    
-    SetInitialState(statePlayers)
-    
-    while True:
-        if input().lower() == 'help':
-            await handle_assistance(game_assistant, statePlayers)
-        
-        UpdatePlayerState(statePlayers)
-        
-        if IsFinalState(statePlayers):
-            break
-
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
