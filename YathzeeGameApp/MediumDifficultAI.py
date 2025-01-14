@@ -1,9 +1,33 @@
 import random
+import requests
 from EasyDifficultAI import IsFinalState, ScoreCalculation
-#from GameAssistant import initialize_assistant, handle_assistance
 
 # Initial Configuration
 sectionsForPlayers = ["One", "Two", "Three", "Four", "Five", "Six", "3 of a kind", "4 of a kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance", "First 6 sections score", "Bonus", "Final Score"]
+
+# Hugging Face API Configuration
+HUGGING_FACE_API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
+HUGGING_FACE_API_KEY = "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" 
+
+def query_assistant(prompt):
+    """Query the Hugging Face API for an assistant response."""
+    headers = {"Authorization": f"Bearer {HUGGING_FACE_API_KEY}"}
+    payload = {"inputs": prompt}
+
+    try:
+        response = requests.post(HUGGING_FACE_API_URL, json=payload, headers=headers)
+        response.raise_for_status()
+        # Hugging Face API returns a list of dictionaries
+        result = response.json()
+        print(response.json())  # Inspect the exact format of the API response
+        if isinstance(result, list) and len(result) > 0:
+            generated_text = result[0].get("generated_text", "Sorry, I couldn't understand that.")
+        else:
+            generated_text = "Unexpected response format from the API."
+        return generated_text
+    except requests.exceptions.RequestException as e:
+        return f"Error contacting the assistant: {e}"
+
 
 def evaluate_state(state_players):
     """
@@ -156,3 +180,9 @@ def AiMakesMoveMedium(state_players):
     state_players[2] = [0, 0, 0, 0, 0]
     
     return state_players
+
+
+while (True):
+    prompt = input("Ask a question: ")
+    response = query_assistant(prompt)
+    print(f"Response: {response}\n")
