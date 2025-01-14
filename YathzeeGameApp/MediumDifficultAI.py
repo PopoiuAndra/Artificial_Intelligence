@@ -19,7 +19,6 @@ def query_assistant(prompt):
         response.raise_for_status()
         # Hugging Face API returns a list of dictionaries
         result = response.json()
-        print(response.json())  # Inspect the exact format of the API response
         if isinstance(result, list) and len(result) > 0:
             generated_text = result[0].get("generated_text", "Sorry, I couldn't understand that.")
         else:
