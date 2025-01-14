@@ -1,0 +1,73 @@
+{"inputs": "What are the rules of Yahtzee?", "outputs": "Yahtzee is a dice game played with five dice. Players take turns rolling the dice to achieve specific scoring combinations. Each player has 13 turns, and each scoring category can be used only once."}
+{"inputs": "What is the scoring for a Full House?", "outputs": "A Full House consists of three dice showing one number and two dice showing another. It scores 25 points regardless of the numbers."}
+{"inputs": "What should I do with a roll of 2, 2, 3, 5, 6?", "outputs": "You could aim for a Three of a Kind by keeping the two 2s and re-rolling the rest, or go for Twos in the upper section by keeping the 2s."}
+{"inputs": "What is the best strategy for rolling a Yahtzee?", "outputs": "Focus on keeping dice that match your Yahtzee target. For example, if you roll three 6s, keep them and re-roll the other two dice to maximize your chance of five 6s."}
+{"inputs": "How do I score a Large Straight?", "outputs": "A Large Straight is a sequence of five consecutive numbers, such as 1-2-3-4-5 or 2-3-4-5-6. It scores 40 points."}
+{"inputs": "I rolled 1, 2, 3, 4, 6. What should I do?", "outputs": "You are close to a Large Straight. Keep 1, 2, 3, 4 and re-roll the 6 to try for a 5."}
+{"inputs": "What happens if I can't score in any category?", "outputs": "If you cannot score in any category, you must choose one to zero out. Choose the category that is least likely to earn a high score later."}
+{"inputs": "What should I do with a roll of 4, 4, 4, 2, 6?", "outputs": "You could aim for a Four of a Kind by keeping the three 4s and re-rolling the 2 and 6, or score in the Fours category for 12 points."}
+{"inputs": "What is the maximum score in Yahtzee?", "outputs": "The maximum possible score in Yahtzee is 1,575 points. This assumes multiple Yahtzees with bonuses and optimal scoring."}
+{"inputs": "How do Yahtzee bonuses work?", "outputs": "If you score additional Yahtzees after the first one, you get a 100-point bonus for each additional Yahtzee, provided the Yahtzee box is already filled with 50 points."}
+{"inputs": "What is the strategy for the first roll?", "outputs": "On the first roll, aim for high-scoring combinations like Yahtzee, Large Straight, or Full House. Focus on keeping high numbers or potential pairs."}
+{"inputs": "What should I do with a roll of 5, 5, 5, 1, 6?", "outputs": "You could aim for a Full House by keeping the three 5s and the 1, or go for Fives in the upper section by keeping the 5s."}
+{"inputs": "How do I score a Small Straight?", "outputs": "A Small Straight is a sequence of four consecutive numbers, such as 1-2-3-4 or 3-4-5-6. It scores 30 points."}
+{"inputs": "I rolled 1, 1, 1, 4, 5. What should I do?", "outputs": "You could aim for a Three of a Kind by keeping the three 1s, or go for Ones in the upper section. Re-roll the 4 and 5 for better chances."}
+{"inputs": "What is the upper section bonus?", "outputs": "If your total score in the upper section is 63 or higher, you receive a 35-point bonus. This usually requires scoring at least three of each number."}
+{"inputs": "What should I do with a roll of 6, 6, 3, 2, 1?", "outputs": "You could aim for Sixes in the upper section by keeping the two 6s, or try for a Large Straight by keeping 3, 2, and 1 and re-rolling the rest."}
+{"inputs": "What is the strategy for the last few turns?", "outputs": "Focus on filling the hardest-to-complete categories, like Yahtzee or Large Straight, if possible. Use any leftover rolls to maximize points in the upper section or chance."}
+{"inputs": "I rolled 4, 4, 2, 2, 2. What should I do?", "outputs": "You have a Full House! Keep all the dice and score 25 points in the Full House category."}
+{"inputs": "What should I do with a roll of 3, 3, 3, 4, 5?", "outputs": "You could aim for a Full House by keeping the three 3s and the 4, or go for Threes in the upper section by keeping the 3s."}
+{"inputs": "How do I score a Three of a Kind?", "outputs": "A Three of a Kind is when you have three dice showing the same number. Add up all the dice and score the total."}
+{"inputs": "What is the strategy for the second roll?", "outputs": "On the second roll, focus on completing the combination you aimed for in the first roll. Keep any useful dice and re-roll the rest."}
+{"inputs": "What should I do with a roll of 1, 1, 2, 3, 4?", "outputs": "You could aim for a Small Straight by keeping 1, 2, 3, and 4, or go for Ones in the upper section by keeping the 1s."}
+{"inputs": "How do I score a Four of a Kind?", "outputs": "A Four of a Kind is when you have four dice showing the same number. Add up all the dice and score the total."}
+{"inputs": "What should I do with a roll of 6, 6, 6, 6, 2?", "outputs": "You could aim for a Four of a Kind by keeping the four 6s, or score in the Sixes category for 24 points."}
+{"inputs": "What is the strategy for the third roll?", "outputs": "On the third roll, finalize your combination. Keep any useful dice and re-roll the rest to maximize your score."}
+{"inputs": "What should I do with a roll of 2, 3, 4, 5, 6?", "outputs": "You have a Large Straight! Keep all the dice and score 40 points in the Large Straight category."}
+{"inputs": "How do I score a Chance?", "outputs": "Chance is a catch-all category where you add up the total of all five dice. Use it when no other categories fit."}
+{"inputs": "What should I do with a roll of 5, 5, 5, 5, 5?", "outputs": "You have a Yahtzee! Keep all the dice and score 50 points in the Yahtzee category."}
+{"inputs": "What should I do with a roll of 3, 3, 4, 4, 5?", "outputs": "You could aim for a Full House by keeping the 3s and 4s, or go for Threes or Fours in the upper section by keeping the respective pairs."}
+{"inputs": "How do I score a Yahtzee?", "outputs": "A Yahtzee is when you have five dice showing the same number. It scores 50 points."}
+{"inputs": "What should I do with a roll of 2, 2, 2, 5, 6?", "outputs": "You could aim for a Three of a Kind by keeping the three 2s and re-rolling the 5 and 6, or go for Twos in the upper section by keeping the 2s."}
+{"inputs": "What is the strategy for the upper section?", "outputs": "Focus on scoring at least three of each number to reach the 63 points needed for the bonus. Prioritize high numbers like 5s and 6s."}
+{"inputs": "I rolled 1, 1, 2, 2, 3. What should I do?", "outputs": "You could aim for a Full House by keeping the 1s and 2s, or go for Ones or Twos in the upper section by keeping the respective pairs."}
+{"inputs": "What should I do with a roll of 4, 5, 5, 5, 6?", "outputs": "You could aim for a Full House by keeping the three 5s and the 4, or go for Fives in the upper section by keeping the 5s."}
+{"inputs": "How do I score a Full House?", "outputs": "A Full House consists of three dice showing one number and two dice showing another. It scores 25 points regardless of the numbers."}
+{"inputs": "What should I do with a roll of 1, 2, 3, 4, 5?", "outputs": "You have a Large Straight! Keep all the dice and score 40 points in the Large Straight category."}
+{"inputs": "What is the strategy for the lower section?", "outputs": "Focus on high-scoring combinations like Yahtzee, Large Straight, and Full House. Use the Chance category for any leftover rolls."}
+{"inputs": "I rolled 2, 2, 3, 3, 4. What should I do?", "outputs": "You could aim for a Full House by keeping the 2s and 3s, or go for Twos or Threes in the upper section by keeping the respective pairs."}
+{"inputs": "What should I do with a roll of 4, 4, 4, 4, 5?", "outputs": "You could aim for a Four of a Kind by keeping the four 4s, or score in the Fours category for 16 points."}
+{"inputs": "How do I score a Yahtzee bonus?", "outputs": "If you roll a second Yahtzee and the Yahtzee category is already filled with 50 points, you score a 100-point bonus."}
+{"inputs": "What should I do with a roll of 3, 3, 3, 3, 6?", "outputs": "You could aim for a Four of a Kind by keeping the four 3s, or score in the Threes category for 9 points."}
+{"inputs": "What is the strategy for the middle game?", "outputs": "Focus on completing the harder combinations like Full House and Small Straight. Use the Chance category if needed."}
+{"inputs": "I rolled 5, 5, 5, 2, 2. What should I do?", "outputs": "You have a Full House! Keep all the dice and score 25 points in the Full House category."}
+{"inputs": "What should I do with a roll of 1, 1, 1, 1, 3?", "outputs": "You could aim for a Four of a Kind by keeping the four 1s, or score in the Ones category for 4 points."}
+{"inputs": "How do I score a Small Straight?", "outputs": "A Small Straight is a sequence of four consecutive numbers, such as 1-2-3-4 or 2-3-4-5. It scores 30 points."}
+{"inputs": "What should I do with a roll of 6, 6, 6, 3, 3?", "outputs": "You could aim for a Full House by keeping the 6s and 3s, or go for Sixes in the upper section by keeping the 6s."}
+{"inputs": "What is the strategy for the final roll?", "outputs": "On the final roll, aim to complete any remaining combinations. Use the Chance category if no other options are available."}
+{"inputs": "I rolled 2, 2, 2, 4, 4. What should I do?", "outputs": "You have a Full House! Keep all the dice and score 25 points in the Full House category."}
+{"inputs": "What should I do with a roll of 1, 2, 3, 4, 6?", "outputs": "You have a Large Straight! Keep all the dice and score 40 points in the Large Straight category."}
+{"inputs": "How do I score a Three of a Kind?", "outputs": "A Three of a Kind is when you have three dice showing the same number. Add up all the dice and score the total."}
+{"inputs": "What is the strategy for the second roll?", "outputs": "On the second roll, focus on completing the combination you aimed for in the first roll. Keep any useful dice and re-roll the rest."}
+{"inputs": "What should I do with a roll of 1, 1, 2, 3, 4?", "outputs": "You could aim for a Small Straight by keeping 1, 2, 3, and 4, or go for Ones in the upper section by keeping the 1s."}
+{"inputs": "How do I score a Four of a Kind?", "outputs": "A Four of a Kind is when you have four dice showing the same number. Add up all the dice and score the total."}
+{"inputs": "What should I do with a roll of 6, 6, 6, 6, 2?", "outputs": "You could aim for a Four of a Kind by keeping the four 6s, or score in the Sixes category for 24 points."}
+{"inputs": "What is the strategy for the third roll?", "outputs": "On the third roll, finalize your combination. Keep any useful dice and re-roll the rest to maximize your score."}
+{"inputs": "What should I do with a roll of 2, 3, 4, 5, 6?", "outputs": "You have a Large Straight! Keep all the dice and score 40 points in the Large Straight category."}
+{"inputs": "How do I score a Chance?", "outputs": "Chance is a catch-all category where you add up the total of all five dice. Use it when no other categories fit."}
+{"inputs": "What should I do with a roll of 5, 5, 5, 5, 5?", "outputs": "You have a Yahtzee! Keep all the dice and score"}
+{"inputs": "What should I do with a roll of 3, 3, 4, 4, 5?", "outputs": "You could aim for a Full House by keeping the 3s and 4s, or go for Threes or Fours in the upper section by keeping the respective pairs."}
+{"inputs": "How do I score a Yahtzee?", "outputs": "A Yahtzee is when you have five dice showing the same number. It scores 50 points."}
+{"inputs": "What should I do with a roll of 2, 2, 2, 5, 6?", "outputs": "You could aim for a Three of a Kind by keeping the three 2s and re-rolling the 5 and 6, or go for Twos in the upper section by keeping the 2s."}
+{"inputs": "What is the strategy for the upper section?", "outputs": "Focus on scoring at least three of each number to reach the 63 points needed for the bonus. Prioritize high numbers like 5s and 6s."}
+{"inputs": "I rolled 1, 1, 2, 2, 3. What should I do?", "outputs": "You could aim for a Full House by keeping"}
+{"inputs": "What should I do with a roll of 4, 5, 5, 5, 6?", "outputs": "You could aim for a Full House by keeping the three 5s and the 4, or go for Fives in the upper section by keeping the 5s."}
+{"inputs": "How do I score a Full House?", "outputs": "A Full House consists of three dice showing one number and two dice showing another. It scores 25 points regardless of the numbers."}
+{"inputs": "What should I do with a roll of 1, 2, 3, 4, 5?", "outputs": "You have a Large Straight! Keep all the dice and score 40 points in the Large Straight category."}
+{"inputs": "What is the strategy for the lower section?", "outputs": "Focus on high-scoring combinations like Yahtzee, Large Straight, and Full House. Use the Chance category for any leftover rolls."}
+{"inputs": "I rolled 2, 2, 3, 3, 4. What should I do?", "outputs": "You could aim for a Full House by keeping the 2s and 3s, or go for Twos or Threes in the upper section by keeping the respective pairs."}
+{"inputs": "What should I do with a roll of 4, 4, 4, 4, 5?", "outputs": "You could aim for a Four of a Kind by keeping the four 4s, or score in the Fours category for 16 points."}
+{"inputs": "How do I score a Yahtzee bonus?", "outputs": "If you roll a second Yahtzee and the Yahtzee category is already filled with 50 points, you score a 100-point bonus."}
+{"inputs": "What should I do with a roll of 3, 3, 3, 3, 6?", "outputs": "You could aim for a Four of a Kind by keeping the four 3s, or score in the Threes category for 9 points."}
+{"inputs": "What is the strategy for the middle game?", "outputs": "Focus on completing the harder combinations like Full House and Small Straight. Use the Chance category if needed."}
+{"inputs": "I rolled 5, 5, 5,
