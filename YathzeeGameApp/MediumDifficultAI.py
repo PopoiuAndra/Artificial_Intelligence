@@ -180,8 +180,3 @@ def AiMakesMoveMedium(state_players):
     
     return state_players
 
-
-while (True):
-    prompt = input("Ask a question: ")
-    response = query_assistant(prompt)
-    print(f"Response: {response}\n")
