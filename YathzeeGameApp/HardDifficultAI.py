@@ -91,33 +91,33 @@ def calculate_reward(dice, state, action_index):
 
 def train_q_learning(): 
     for episode in range(num_episodes):
-        print("Episode " , episode + NUM_EPISODES, " started.")
+        #print("Episode " , episode + NUM_EPISODES, " started.")
         # Initialize the game state
         dices = roll_dice()
         dices.sort()
         scoring_state = tuple([0] * 13)  # All categories initially empty
 
         for turn in range(13):  # Maximum of 13 turns per game/episode
-            print("Turn ", turn + 1, " started.")
+            #print("Turn ", turn + 1, " started.")
             # Define the current state
             current_state = (tuple(dices), scoring_state) 
-            print("Current state: ", current_state)
+            #print("Current state: ", current_state)
 
             # Choose an action (scoring category) using epsilon-greedy policy
             action = choose_action(current_state) 
-            print("\nAction: ", action)
+            #print("\nAction: ", action)
 
             # Calculate the reward for the chosen action
             reward = calculate_reward(dices, scoring_state,  action) 
-            print("Reward: ", reward)
+            #print("Reward: ", reward)
 
-            print("scoring state before: ", scoring_state)
+            #print("scoring state before: ", scoring_state)
             # Simulate scoring the chosen category (update scoring_state)
             new_scoring_state = list(scoring_state)
             if 0 <= action < len(new_scoring_state):
                 new_scoring_state[action] = 1  # Mark the category as taken
             scoring_state = tuple(new_scoring_state) 
-            print("Scoring state after: ", scoring_state)
+            #print("Scoring state after: ", scoring_state)
 
             # Roll the dice again for the next state
             dices = roll_dice()
@@ -129,20 +129,20 @@ def train_q_learning():
             # Compute the maximum Q-value for the next state
             max_next_q_value = 0.0 if new_state[1] == (1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) else max(
                 q_table.get((new_state, act), 0.0) for act in range(13) if new_state[1][act] == 0) 
-            print("Max next Q-value: ", max_next_q_value)
+            #print("Max next Q-value: ", max_next_q_value)
 
             # Update Q-value using the Q-learning formula
             current_q_value = q_table.get((current_state, action), 0.0) 
-            print("Current Q-value: ", current_q_value)
+            #print("Current Q-value: ", current_q_value)
             
             q_table[(current_state, action)] = current_q_value + ALPHA * (reward + GAMMA * max_next_q_value - current_q_value) 
-            print("Updated Q-value: ", q_table[(current_state, action)])
+            #print("Updated Q-value: ", q_table[(current_state, action)])
            
-        # Print progress
-        if episode % 50 == 0:
-            print(f"Episode {episode + NUM_EPISODES} completed.")
+        # #print progress
+        #if episode % 50 == 0:
+            #print(f"Episode {episode + NUM_EPISODES} completed.")
 
-    print("Training complete!")
+    #print("Training complete!")
     save_q_table()
     save_episodes_num(num_episodes + NUM_EPISODES)
 
@@ -205,32 +205,32 @@ def AiMakesMoveHard(statePlayers):
 
     # THE DICE CHOOSING PART ----------------------------
     for i in range(0, 2):
-        print("Ai choses the ", (i + 1), "th time")
+        #print("Ai choses the ", (i + 1), "th time")
         global EPSILON
         EPSILON = max(0.05, EPSILON - 0.05)
         if random.random() < EPSILON:
-            print("Random action")
+            #print("Random action")
             # Explore: Choose a random action
             statePlayers[2] = [i if random.random() <= EPSILON else 0 for i in statePlayers[2]]
             statePlayers[2] = [random.randint(1, 6) if i == 0 else i for i in statePlayers[2]]
 
-            print(new_state)
+            #print(new_state)
 
             action = random.choice([i for i in range(13) if new_state[i] == 0])
             continue
         
         # Dices like in the q-table
         dices = sorted(statePlayers[2])
-        print("Dices:", statePlayers[2])
+        #print("Dices:", statePlayers[2])
 
         curent_state = tuple ((tuple(dices), tuple(new_state)))
 
         action = max(range(13), key=lambda action: q_table.get((curent_state, action), 0.0) if new_state[action] == 0 else 0.0)
-        for i in range(13):
-            print(q_table.get((curent_state, i), 0.0), end = " ")
+        #for i in range(13):
+            #print(q_table.get((curent_state, i), 0.0), end = " ")
         reward = q_table.get((curent_state, action), 0.0)
-        print("Action:", action)
-        print("Reward:", q_table.get((curent_state, action), 0.0))
+        #print("Action:", action)
+        #print("Reward:", q_table.get((curent_state, action), 0.0))
 
         # Reroll the dices based on the action
         if action >= 0 and action <= 5:
@@ -280,14 +280,14 @@ def AiMakesMoveHard(statePlayers):
             # Chance
             statePlayers[2] = [statePlayers[2][i] if statePlayers[2][i] > 3 else random.randint(1, 6) for i in range(5)]
         
-        print("AI chose to reroll")
-        print()
+        #print("AI chose to reroll")
+        #print()
     # THE DICE CHOOSING PART ----------------------------
 
     alegere = max(range(13), key = lambda alegere: ScoreCalculation(statePlayers[2])[alegere] if statePlayers[3][alegere] == -1 else -1) 
     score = ScoreCalculation(statePlayers[2])[alegere]
-    print("Final dices:", statePlayers[2])
-    print("AI Player chose the section: ", sectionsForPlayers[alegere], " with score: ", score)
+    #print("Final dices:", statePlayers[2])
+    #print("AI Player chose the section: ", sectionsForPlayers[alegere], " with score: ", score)
 
     statePlayers[3][alegere] = score
     statePlayers[3][13] = sum([i for i in statePlayers[3][0:6] if i != -1])

@@ -1,6 +1,6 @@
-from MediumDifficultAI import AiMakesMoveMedium
+from MediumDifficultAI import AiMakesMoveMedium, minimax
 from EasyDifficultAI import  re, AiMakesMoveEasy, ScoreCalculation
-from HardDifficultAI import AiMakesMoveHard
+from HardDifficultAI import AiMakesMoveHard, q_table, train_q_learning
 from OllamaAssistant import ask_about_yahtzee
 import random
 import pygame
@@ -8,7 +8,7 @@ import pygame
 AiMakesMove = None
 
 def ShowScore(statePlayers):
-    global restart_game
+    global restart_game, decision_vector
     print()
     # calcul the bonus for player 1 and ai player
     statePlayers[3][13] = sum([i for i in statePlayers[3][0:6] if i != -1])
@@ -25,7 +25,7 @@ def ShowScore(statePlayers):
     print("THE WINNER IS ", "PLAYER 1!" if statePlayers[3][15] > statePlayers[4][15] else "PLAYER 2!")
     restart_game = False
     while restart_game == False:    
-        draw_end(screen, statePlayers)
+        draw_end(screen, statePlayers, generate_decision_feedback(decision_vector))
 
 def IsFinalState(statePlayers):
     if -1 not in statePlayers[3][:13] and -1 not in statePlayers[4][:13]:
@@ -39,7 +39,7 @@ def IsFinalState(statePlayers):
         # Continue game normaly
 
 def UserMakesMove(statePlayers):
-    global choose_button, row_chosen, can_choose_section, selected_dice
+    global choose_button, row_chosen, can_choose_section, selected_dice, decision_vector, round
     selected_dice = [False] * NUM_DICE
     can_choose_section = [0 for _ in range(13)]
     
@@ -50,6 +50,7 @@ def UserMakesMove(statePlayers):
     dices = statePlayers[2]
     print("Your dices: \n 0  1  2  3  4" + "\n" + str(statePlayers[2]))
     if statePlayers[1] == 3:
+        round += 1
         source = statePlayers[2]
         print("You have reached the maximum number of throws.")
     else:
@@ -65,6 +66,11 @@ def UserMakesMove(statePlayers):
             else:
                 dices.append(0)
         print("Your chosen dices: " + str(source))
+        new_vec = [0 if i == -1 else 1 for i in statePlayers[4]]
+        print("Decision ", decide_dice_to_keep(statePlayers[2], new_vec))
+        decision_vector.append((round, statePlayers[1], source, decide_dice_to_keep(statePlayers[2],  new_vec), statePlayers[2]))
+        print("Decision vector: ", generate_decision_feedback(decision_vector))
+
     
     statePlayers[2] = dices
     # print("Player 2 chosen dices: " + str(statePlayers[2]))
@@ -276,7 +282,9 @@ def draw_help_screen(screen, statePlayers):
                 # "Ask" the question when Enter is pressed
                 if text_input.strip():
                     chat_history.append(("You", text_input.strip()))
-                    answer = ask_about_yahtzee(text_input.strip())
+                    if text_input.strip() == "next":
+                        answer = "A good next move would be to choose " + str(decide_dice_to_keep(statePlayers[2], [0 if i == -1 else 1 for i in statePlayers[4]]))
+                    else : answer = ask_about_yahtzee(text_input.strip())
                     chat_history.append(("Bot", answer))
                     text_input = ""  # Reset input
             elif event.key == pygame.K_BACKSPACE:
@@ -293,7 +301,10 @@ def draw_help_screen(screen, statePlayers):
             if ask_button_rect.collidepoint(mouse_x, mouse_y):
                 if text_input.strip():
                     chat_history.append(("You", text_input.strip()))
-                    answer = ask_about_yahtzee(text_input.strip())
+                    if text_input.strip() == "next":
+                        answer = "A good next move would be to choose " + str(decide_dice_to_keep(statePlayers[2], [0 if i == -1 else 1 for i in statePlayers[4]]))
+                    else: answer = ask_about_yahtzee(text_input.strip())
+
                     chat_history.append(("Bot", answer))
                     text_input = ""  # Reset input
         # go back button
@@ -458,58 +469,129 @@ def draw_screen(screen, statePlayers):
 
     pygame.display.flip()
 
-def draw_end(screen, statePlayers):
-    global restart_game
-    # draw you won or You lost and a refresh button at the bottom
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = event.pos
-            if WIDTH//4 - 100 <= mouse_pos[0] <= WIDTH//4 + 100 and HEIGHT - 100 <= mouse_pos[1] <= HEIGHT - 60:
-                print("Refresh button clicked!")
-                restart_game = True
-                main()
+def draw_feedback_screen(screen, statePlayers, decision_feedback):
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = event.pos
+                if WIDTH // 4 - 100 <= mouse_pos[0] <= WIDTH // 4 + 100 and HEIGHT - 100 <= mouse_pos[1] <= HEIGHT - 60:
+                    print("Go back button clicked!")
+                    return
 
-    screen.fill((0, 100, 0))
+        screen.fill(WHITE)
 
-    # in the right half draw the table with the final scores
-    for row in range(ROWS):
-        for col in range(COLS):
-            cell_x = WIDTH//2 + col * CELL_WIDTH
-            cell_y = 50 + row * CELL_HEIGHT
-            pygame.draw.rect(screen, (144, 238, 144), (cell_x, cell_y, CELL_WIDTH, CELL_HEIGHT))
-            pygame.draw.rect(screen, (0, 0, 0), (cell_x, cell_y, CELL_WIDTH, CELL_HEIGHT), 3)
-            if row == 0:
-                # header row
-                text = FONT.render(header[col], True, TEXT_COLOR)
-            elif col == 0:
-                # combination names
-                text = FONT.render(sectionsForPlayers[row - 1], True, TEXT_COLOR)
-            else:
-                # scores
-                text = FONT.render('-' if statePlayers[col + 2][row - 1] == -1 else str(statePlayers[col + 2][row - 1]), True, TEXT_COLOR)
-            text_rect = text.get_rect(center=(cell_x + CELL_WIDTH // 2, cell_y + CELL_HEIGHT // 2))
+        # change font size
+        FONT = pygame.font.Font(None, 18)
+        # Draw the feedback section on the right side
+        feedback_box_x = 20 # Start drawing feedback section
+        feedback_box_width = WIDTH - 40
+        feedback_box_height = HEIGHT - 200
+        feedback_box_y = 100
+
+        # change font size back
+        FONT = pygame.font.Font(None, 25)
+
+        pygame.draw.rect(screen, WHITE, (feedback_box_x, feedback_box_y, feedback_box_width, feedback_box_height))
+        pygame.draw.rect(screen, BLACK, (feedback_box_x, feedback_box_y, feedback_box_width, feedback_box_height), 3)
+
+        # Print feedback inside the feedback box
+        feedback_lines = decision_feedback.split('\n')  # Split the feedback into individual lines
+        line_spacing = 20  # Spacing between lines
+        feedback_y = feedback_box_y + 20  # Start 20px below the top of the box
+
+        for line in feedback_lines:
+            if feedback_y + line_spacing > feedback_box_y + feedback_box_height - 20:
+                break  # Stop if we run out of space in the feedback box
+            text = FONT.render(line, True, BLACK)
+            text_rect = text.get_rect(topleft=(feedback_box_x + 10, feedback_y))
             screen.blit(text, text_rect)
+            feedback_y += line_spacing
+
+        # draw go back button
+        pygame.draw.rect(screen, LIGHT_GREEN, (WIDTH // 4 - 100, HEIGHT - 100, 200, 40))
+        pygame.draw.rect(screen, BLACK, (WIDTH // 4 - 100, HEIGHT - 100, 200, 40), 3)
+        text = FONT.render("Go back", True, BLACK)
+        text_rect = text.get_rect(center=(WIDTH // 4, HEIGHT - 80))
+        screen.blit(text, text_rect)
+
+        pygame.display.flip()
+
+def draw_end(screen, statePlayers, decision_feedback):
+    global restart_game, FONT
+    running = True  # Ensure this is defined to manage the loop
+
+    # Main loop for the end screen
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = event.pos
+                if WIDTH // 4 - 100 <= mouse_pos[0] <= WIDTH // 4 + 100 and HEIGHT - 100 <= mouse_pos[1] <= HEIGHT - 60:
+                    print("Refresh button clicked!")
+                    restart_game = True
+                    main()
+                    return  # Exit to restart the game
+                if WIDTH // 4 - 100 <= mouse_pos[0] <= WIDTH // 4 + 100 and HEIGHT - 150 <= mouse_pos[1] <= HEIGHT - 110:
+                    print("See feedback button clicked!")
+                    # Show the feedback screen
+                    draw_feedback_screen(screen, statePlayers, decision_feedback)
 
 
-    # draw the text
-    text = FONT.render("Game Over!", True, BLACK)
-    text_rect = text.get_rect(center=(WIDTH//4, HEIGHT//4))
-    screen.blit(text, text_rect)
+        screen.fill((0, 100, 0))
 
-    text = FONT.render("You won!" if statePlayers[3][15] < statePlayers[4][15] else "You lost!", True, BLACK)
-    text_rect = text.get_rect(center=(WIDTH//4, HEIGHT//3))
-    screen.blit(text, text_rect)
+        # Draw the final scores table on the right half
+        for row in range(ROWS):
+            for col in range(COLS):
+                cell_x = WIDTH // 2 + col * CELL_WIDTH
+                cell_y = 50 + row * CELL_HEIGHT
+                pygame.draw.rect(screen, (144, 238, 144), (cell_x, cell_y, CELL_WIDTH, CELL_HEIGHT))
+                pygame.draw.rect(screen, (0, 0, 0), (cell_x, cell_y, CELL_WIDTH, CELL_HEIGHT), 3)
+                if row == 0:
+                    # Header row
+                    text = FONT.render(header[col], True, TEXT_COLOR)
+                elif col == 0:
+                    # Combination names
+                    text = FONT.render(sectionsForPlayers[row - 1], True, TEXT_COLOR)
+                else:
+                    # Scores
+                    text = FONT.render('-' if statePlayers[col + 2][row - 1] == -1 else str(statePlayers[col + 2][row - 1]), True, TEXT_COLOR)
+                text_rect = text.get_rect(center=(cell_x + CELL_WIDTH // 2, cell_y + CELL_HEIGHT // 2))
+                screen.blit(text, text_rect)
 
-    # draw the refresh button
-    pygame.draw.rect(screen, WHITE, (WIDTH//4 - 100, HEIGHT - 100, 200, 40))
-    pygame.draw.rect(screen, BLACK, (WIDTH//4 - 100, HEIGHT - 100, 200, 40), 3)
-    text = FONT.render("Refresh", True, BLACK)
-    text_rect = text.get_rect(center=(WIDTH//4, HEIGHT - 80))
-    screen.blit(text, text_rect)
+        # Draw game result text
+        text = FONT.render("Game Over!", True, BLACK)
+        text_rect = text.get_rect(center=(WIDTH // 4, 30))
+        screen.blit(text, text_rect)
 
-    pygame.display.flip()
+        text = FONT.render("You won!" if statePlayers[3][15] < statePlayers[4][15] else "You lost!", True, BLACK)
+        text_rect = text.get_rect(center=(WIDTH // 4, 60))
+        screen.blit(text, text_rect)
+
+        
+
+        # draw see feedback button
+        pygame.draw.rect(screen, LIGHT_GREEN, (WIDTH // 4 - 100, HEIGHT - 150, 200, 40))
+        pygame.draw.rect(screen, BLACK, (WIDTH // 4 - 100, HEIGHT - 150, 200, 40), 3)
+        text = FONT.render("See feedback", True, BLACK)
+        text_rect = text.get_rect(center=(WIDTH // 4, HEIGHT - 130))
+        screen.blit(text, text_rect)
+
+        # Draw refresh button
+        pygame.draw.rect(screen, WHITE, (WIDTH // 4 - 100, HEIGHT - 100, 200, 40))
+        pygame.draw.rect(screen, BLACK, (WIDTH // 4 - 100, HEIGHT - 100, 200, 40), 3)
+        text = FONT.render("Refresh", True, BLACK)
+        text_rect = text.get_rect(center=(WIDTH // 4, HEIGHT - 80))
+        screen.blit(text, text_rect)
+
+        pygame.display.flip()
 
 def main(): #game_assistant = initialize_assistant()
     global AiMakesMove
@@ -578,7 +660,46 @@ def main(): #game_assistant = initialize_assistant()
     draw_screen(screen, statePlayers)
     
     UpdatePlayerState(statePlayers)
+  
+def generate_decision_feedback(decision_vector):
+    """
+    Generates feedback on dice decisions during a Yahtzee game.
     
+    Args:
+        decision_vector: A list of tuples where each tuple represents a roll decision.
+            Each tuple contains:
+                - turn_number: The current turn number.
+                - roll_number: The roll number on this turn.
+                - chosen_dice: A list of dice that were chosen to keep.
+                - better_dice (optional): A list of dice that could have been chosen and were better.
+    
+    Returns:
+        A descriptive string summarizing the feedback for all decisions.
+    """
+    feedback = []
+
+    for decision in decision_vector:
+        turn_number, roll_number, chosen_dice, better_dice, dices = decision
+
+        # Start feedback for the current decision
+        if better_dice:
+            feedback.append(
+                f"On turn {turn_number}, roll {roll_number}, you chose {chosen_dice}, "
+                f"but it would have been better to choose {better_dice}. {dices}"
+            )
+        else:
+            feedback.append(
+                f"On turn {turn_number}, roll {roll_number}, you chose {chosen_dice}, "
+                f"which was a good decision. {dices}"
+            )
+
+    # Combine all feedback into a single text block
+    return "\n".join(feedback)
+
+#train the AI
+for i in range(50):
+    train_q_learning()
+
 # Initial 
 sectionsForPlayers = ["One", "Two", "Three", "Four", "Five", "Six", "3 of a kind", "4 of a kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance", "Sum", "Bonus", "Final Score"]
 statePlayers = list(range(5))
@@ -636,8 +757,71 @@ chat_history = []
 text_input = ""
 dice_choices = []
 
+decision_vector = []
+round = 1
+
 # Fonts
 FONT = pygame.font.Font(None, 25)
 header = ["Players", "Player 1", "Player 2"]
+
+
+
+############################################################################
+def decide_dice_to_keep(dice, scoring_state):
+    """
+    Determines which dice to keep based on the Q-table and the current state of the game.
+
+    Args:
+        dice (list[int]): The current dice roll, sorted in ascending order.
+        scoring_state (list[int]): The current scoring state, where 0 means the category is available and 1 means taken.
+
+    Returns:
+        list[int]: Indices of the dice to keep.
+    """
+    # Prepare the current state
+    current_state = (tuple(sorted(dice)), tuple(scoring_state))
+
+    # Find the action with the highest Q-value
+    best_action = max(
+        range(13),
+        key=lambda action: q_table.get((current_state, action), 0.0) if scoring_state[action] == 0 else -float('inf')
+    )
+
+    print(len(q_table))
+    print("Best action:", best_action, )
+
+    # Determine which dice to keep based on the best action
+    indices_to_keep = []
+    if 0 <= best_action <= 5:  # Ones to Sixes
+        indices_to_keep = [i for i, d in enumerate(dice) if d == (best_action + 1)]
+    elif best_action == 6:  # Three of a Kind
+        indices_to_keep = [i for i, d in enumerate(dice) if dice.count(d) >= 3]
+    elif best_action == 7:  # Four of a Kind
+        indices_to_keep = [i for i, d in enumerate(dice) if dice.count(d) >= 4]
+    elif best_action == 8:  # Full House
+        indices_to_keep = [i for i, d in enumerate(dice) if dice.count(d) >= 2]
+    elif best_action == 9:  # Small Straight
+        # Prioritize sequences of 4 dice
+        sequences = [[1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6]]
+        for seq in sequences:
+            if all(x in dice for x in seq):
+                indices_to_keep = [i for i, d in enumerate(dice) if d in seq]
+                break
+    elif best_action == 10:  # Large Straight
+        indices_to_keep = list(range(len(dice)))  # Keep all dice
+    elif best_action == 11:  # Yahtzee
+        indices_to_keep = list(range(len(dice)))  # Keep all dice if they match
+    elif best_action == 12:  # Chance
+        indices_to_keep = [i for i, d in enumerate(dice) if d > 3]  # Keep high-value dice
+
+    return indices_to_keep
+
+
+print(decide_dice_to_keep([1, 2, 3, 5, 6], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+print(decide_dice_to_keep([1, 1, 1, 2, 2], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+############################################################################
+
+
+
 
 main()
