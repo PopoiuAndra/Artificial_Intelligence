@@ -5,13 +5,6 @@ openai.api_base = "http://localhost:11434/v1"
 openai.api_key = "ollama"  # Placeholder; Ollama typically doesn't require a key.
 
 def ask_about_yahtzee(question):
-    """
-    Function to ask a question to the Ollama model about Yahtzee.
-    Args:
-        question (str): The user's question about Yahtzee.
-    Returns:
-        str: The model's response or a message if an error occurs.
-    """
     try:
         # Send the question to the Ollama server
         response = openai.ChatCompletion.create(
